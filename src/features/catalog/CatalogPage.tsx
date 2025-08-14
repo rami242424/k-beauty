@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import type { Product } from '@/types/product';
+import type { Product } from '../../types/product';
 
 const mock: Product[] = [
   { id: 'p1', name: 'Velvet Lip Tint', price: 12000, category: 'lip',  imageUrl: 'https://picsum.photos/seed/lip/640/480',  rating: 4.5, tags: ['matte'] },
