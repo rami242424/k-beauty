@@ -5,6 +5,7 @@ import App from './App.tsx'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import CatalogPage from './features/catalog/CatalogPage';
 import Navbar from './components/Navbar';
+import CartPage from './features/order/CartPage.tsx'
 
 
 createRoot(document.getElementById('root')!).render(
@@ -15,7 +16,7 @@ createRoot(document.getElementById('root')!).render(
         <Route path="/" element={<App />} />
         {/* <Route path="/catalog" element={<div>Catalog Page</div>} /> */}
         <Route path="/catalog" element={<CatalogPage />} />
-        <Route path="/cart" element={<div>Cart Page</div>} />
+        <Route path="/cart" element={<CartPage />} />
         <Route path="/checkout" element={<div>Checkout Page</div>} />
         <Route path="/admin" element={<div>Admin Page</div>} />
       </Routes>
