@@ -1,6 +1,8 @@
+// src/features/catalog/CatalogPage.tsx
 import { useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import type { Product } from '../../types/product';
+import { useCartStore } from '../order/cartStore';
 
 const mock: Product[] = [
   { id: 'p1', name: 'Velvet Lip Tint', price: 12000, category: 'lip',  imageUrl: 'https://picsum.photos/seed/lip/640/480',  rating: 4.5, tags: ['matte'] },
@@ -14,8 +16,8 @@ const sorts = ['recent','price-asc','price-desc','rating-desc'] as const;
 export default function CatalogPage() {
   const [params, setParams] = useSearchParams();
 
-  const q = params.get('q') ?? '';
-  const cat = (params.get('cat') ?? 'all') as (typeof categories)[number];
+  const q    = params.get('q') ?? '';
+  const cat  = (params.get('cat')  ?? 'all')    as (typeof categories)[number];
   const sort = (params.get('sort') ?? 'recent') as (typeof sorts)[number];
 
   const set = (k: string, v: string) => {
@@ -26,7 +28,7 @@ export default function CatalogPage() {
 
   const filtered = useMemo(() => {
     let arr = mock;
-    // 검색
+
     if (q) {
       const kw = q.toLowerCase();
       arr = arr.filter(p =>
@@ -34,17 +36,19 @@ export default function CatalogPage() {
         p.tags?.some(t => t.toLowerCase().includes(kw))
       );
     }
-    // 카테고리
+
     if (cat !== 'all') arr = arr.filter(p => p.category === cat);
-    // 정렬
+
     switch (sort) {
-      case 'price-asc':  arr = [...arr].sort((a,b)=>a.price-b.price); break;
-      case 'price-desc': arr = [...arr].sort((a,b)=>b.price-a.price); break;
-      case 'rating-desc':arr = [...arr].sort((a,b)=>(b.rating??0)-(a.rating??0)); break;
-      default:           arr = arr; // recent/mock order
+      case 'price-asc':   arr = [...arr].sort((a,b)=>a.price-b.price); break;
+      case 'price-desc':  arr = [...arr].sort((a,b)=>b.price-a.price); break;
+      case 'rating-desc': arr = [...arr].sort((a,b)=>(b.rating??0)-(a.rating??0)); break;
+      default:            /* recent: mock 순서 유지 */ break;
     }
     return arr;
   }, [q, cat, sort]);
+
+  const addItem = useCartStore(s => s.addItem);
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
@@ -92,7 +96,14 @@ export default function CatalogPage() {
               <div className="font-semibold">{p.name}</div>
               <div className="text-sm text-gray-500 capitalize">{p.category}</div>
               <div className="mt-1 font-bold">{p.price.toLocaleString()}원</div>
-              <button className="mt-3 w-full py-2 rounded-xl border hover:bg-gray-50">담기</button>
+              <button
+                className="mt-3 w-full py-2 rounded-xl border hover:bg-gray-50"
+                onClick={() =>
+                  addItem({ id: p.id, name: p.name, price: p.price, imageUrl: p.imageUrl, qty: 1 })
+                }
+              >
+                담기
+              </button>
             </article>
           ))}
         </div>
