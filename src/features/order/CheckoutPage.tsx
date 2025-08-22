@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import z from "zod";
+import {z} from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { CheckoutForm } from "../../types/order";
 import { useCartStore, useCartTotal } from "./cartStore";
@@ -9,7 +9,7 @@ const schema = z.object({
     name: z.string().min(2, "이름을 입력하세요."),
     phone: z.string().min(9, "연락처를 입력하세요."),
     address: z.string().min(5, "주소를 입력하세요."),
-    payment: z.enum(['card', 'bank', 'cod']),
+    payment: z.enum(['card', 'bank', 'kakao', 'naver', 'payco', 'cod']),
     memo: z.string().optional(),
 });
 
@@ -19,7 +19,7 @@ export default function CheckoutPage(){
     const clear = useCartStore(s => s.clear);
     const total = useCartTotal();
 
-    const { register, handleSubmit, formState: {error, isSubmitting} } = useForm<CheckoutForm>({ resolver: zodResolver(schema), defaultValues: { payment: 'card' }});
+    const { register, handleSubmit, formState: {errors, isSubmitting} } = useForm<CheckoutForm>({ resolver: zodResolver(schema), defaultValues: { payment: 'card' }});
 
     if(items.length === 0){
         return (
@@ -40,7 +40,7 @@ export default function CheckoutPage(){
     return (
         <div>
             {/* 주문자정보 */}
-            <form>
+            <form onSubmit={handleSubmit(onSubmit)}>
                 <h1>주문 정보</h1>
                 <div>
                     <label>이름</label>
@@ -78,7 +78,10 @@ export default function CheckoutPage(){
                     <textarea rows={3} {...register('memo')}/>
                 </div>
 
-                <button>
+                <button
+                    type="submit"
+                    disabled={isSubmitting}
+                >
                     {isSubmitting ? "주문 처리 중..." : "주문하기"}
                 </button>
             </form>
