@@ -9,7 +9,7 @@ const schema = z.object({
   name: z.string().min(2, '이름을 입력하세요'),
   phone: z.string().min(9, '연락처를 입력하세요'),
   address: z.string().min(5, '주소를 입력하세요'),
-  payment: z.enum(['card','bank','cod']),
+  payment: z.enum(['card', 'bank', 'kakao', 'naver', 'payco', 'cod']),
   memo: z.string().optional(),
 });
 
@@ -67,6 +67,9 @@ export default function CheckoutPage() {
           <label className="block text-sm mb-1">결제 방법</label>
           <select className="w-full rounded-xl border px-3 py-2" {...register('payment')}>
             <option value="card">카드 결제</option>
+            <option value="kakao">카카오페이</option>
+            <option value="naver">네이버페이</option>
+            <option value="payco">페이코결제</option>
             <option value="bank">무통장 입금</option>
             <option value="cod">대금 상환(COD)</option>
           </select>
