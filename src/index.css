@@ -1,6 +1,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@theme {
+  --color-brand: oklch(0.62 0.16 15);      /* 브랜드 메인 */
+  --color-brand-600: oklch(0.56 0.16 15);
+  --radius-xl: 1rem;
+  --shadow-card: 0 6px 20px rgba(0,0,0,0.06);
+  --container: 72rem;                      /* max-w-6xl */
+}
 
 
 :root {
