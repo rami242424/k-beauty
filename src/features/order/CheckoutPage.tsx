@@ -40,7 +40,7 @@ export default function CheckoutPage() {
   };
 
   return (
-    <div className="p-6 max-w-5xl mx-auto grid md:grid-cols-2 gap-6">
+    <div className="mx-auto max-w-[var(--container)] px-4 py-6">
       {/* 주문자 정보 */}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
         <h1 className="text-2xl font-bold mb-2">주문 정보</h1>

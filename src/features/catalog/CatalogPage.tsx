@@ -51,7 +51,7 @@ export default function CatalogPage() {
   const addItem = useCartStore(s => s.addItem);
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className="mx-auto max-w-[var(--container)] px-4 py-6">
       {/* 컨트롤바 */}
       <div className="flex flex-col md:flex-row gap-3 md:items-center mb-4">
         <input

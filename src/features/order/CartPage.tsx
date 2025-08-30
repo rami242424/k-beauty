@@ -18,7 +18,7 @@ export default function CartPage() {
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="mx-auto max-w-[var(--container)] px-4 py-6">
       <h1 className="text-2xl font-bold mb-4">장바구니</h1>
       <ul className="space-y-3">
         {items.map(i => (

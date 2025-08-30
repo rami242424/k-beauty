@@ -6,7 +6,7 @@ export default function CheckoutSuccessPage(){
     const total = state?.total ?? 0;
 
     return (
-        <div>
+        <div className="mx-auto max-w-[var(--container)] px-4 py-6">
             <h1>주문이 완료되었습니다</h1>
             <p>결제 금액 : <b>{total.toLocaleString()}원</b></p>
             <div>
