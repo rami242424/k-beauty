@@ -1,26 +1,28 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import './index.css'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { Toaster } from 'sonner'
 import App from './App.tsx'
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
-import CatalogPage from './features/catalog/CatalogPage';
-import Navbar from './components/Navbar';
+import CatalogPage from './features/catalog/CatalogPage.tsx'
 import CartPage from './features/order/CartPage.tsx'
 import CheckoutPage from './features/order/CheckoutPage.tsx'
-import CheckoutSuccessPage from './features/order/ChecoutSuccessPage.tsx'
-
+import CheckoutSuccessPage from './features/order/CheckoutSuccessPage.tsx'
+import Navbar from './components/Navbar.tsx'
+import './index.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <Navbar />
+      {/* 토스트 컨테이너 */}
+      <Toaster richColors position="top-center" />
       <Routes>
         <Route path="/" element={<App />} />
         <Route path="/catalog" element={<CatalogPage />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/checkout/success" element={<CheckoutSuccessPage />} />
-        <Route path="/admin" element={<div>Admin Page</div>} />
+        <Route path="/admin" element={<div className="mx-auto max-w-[var(--container)] px-4 py-6">Admin Page</div>} />
       </Routes>
     </BrowserRouter>
   </StrictMode>,
