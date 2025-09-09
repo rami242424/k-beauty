@@ -1,7 +1,0 @@
-[33mcommit a7f5feb0aaea2f84cb382c49e86b2c65c1666fe1[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m
-Author:     rami242424 <mickygamja@naver.com>
-AuthorDate: Wed Aug 6 10:00:00 2025 +0900
-Commit:     rami242424 <mickygamja@naver.com>
-CommitDate: Thu Aug 28 11:43:58 2025 +0900
-
-    chore: initial project setup (Vite + React + TS + Tailwind)
