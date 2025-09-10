@@ -1,6 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 @theme {
   --color-brand: oklch(0.62 0.16 15);      /* 브랜드 메인 */
   --color-brand-600: oklch(0.56 0.16 15);
