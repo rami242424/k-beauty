@@ -54,7 +54,7 @@ export default function CatalogPage() {
       case 'price-asc':   arr = [...arr].sort((a,b)=>a.price-b.price); break
       case 'price-desc':  arr = [...arr].sort((a,b)=>b.price-a.price); break
       case 'rating-desc': arr = [...arr].sort((a,b)=>(b.rating??0)-(a.rating??0)); break
-      default: break // recent: mock 순서 유지
+      default: break 
     }
     return arr
   }, [q, cat, sort])
