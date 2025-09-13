@@ -59,8 +59,8 @@ h1 {
 .legacy-btn:hover {
   border-color: #646cff;
 }
-button:focus,
-button:focus-visible {
+.legacy-btn:focus,
+.legacy-btn:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
