@@ -1,16 +1,22 @@
-import { Link } from 'react-router-dom';
+import { Routes, Route } from "react-router-dom";
+import HomePage from "./features/home/HomePage";
+import CatalogPage from "./features/catalog/CatalogPage";
+import CartPage from "./features/order/CartPage";
+import CheckoutPage from "./features/order/CheckoutPage";
+import CheckoutSuccessPage from "./features/order/CheckoutSuccessPage";
 
 export default function App() {
   return (
-    <>
-      <h1 className="text-3xl font-bold">K-Beauty Project</h1>
-      <p className="mt-2 text-gray-600">카탈로그 · 장바구니 · 체크아웃 · 관리</p>
-      <div className="mt-6 flex gap-3">
-        <Link to="/catalog" className="px-4 py-2 rounded-xl border">카탈로그</Link>
-        <Link to="/cart" className="px-4 py-2 rounded-xl border">장바구니</Link>
-        <Link to="/checkout" className="px-4 py-2 rounded-xl border">체크아웃</Link>
-        <Link to="/admin" className="px-4 py-2 rounded-xl border">관리</Link>
-      </div>
-    </>
-  )
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="/catalog" element={<CatalogPage />} />
+      <Route path="/cart" element={<CartPage />} />
+      <Route path="/checkout" element={<CheckoutPage />} />
+      <Route path="/checkout/success" element={<CheckoutSuccessPage />} />
+      <Route
+        path="/admin"
+        element={<div className="mx-auto max-w-[var(--container)] px-4 py-6">Admin Page</div>}
+      />
+    </Routes>
+  );
 }

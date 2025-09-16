@@ -6,7 +6,7 @@ import App from './App.tsx'
 import CatalogPage from './features/catalog/CatalogPage.tsx'
 import CartPage from './features/order/CartPage.tsx'
 import CheckoutPage from './features/order/CheckoutPage.tsx'
-import CheckoutSuccessPage from './features/order/ChecoutSuccessPage.tsx'
+import CheckoutSuccessPage from './features/order/CheckoutSuccessPage.tsx'
 import './index.css'
 import AppLayout from './components/layout/AppLayout.tsx'
 
