@@ -5,7 +5,7 @@ type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {
 export default function Button({ variant = 'outline', className = '', ...rest }: Props) {
   const base = 'inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm transition'
   const styles = variant === 'solid'
-    ? 'bg-pink-600 text-white hover:bg-pink-700'
-    : 'border hover:bg-gray-50'
+    ? "btn-brand" 
+    : "btn-outline-brand";
   return <button className={`${base} ${styles} ${className}`} {...rest} />
 }
