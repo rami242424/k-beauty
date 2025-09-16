@@ -1,3 +1,4 @@
+// src/features/home/HomePage.tsx
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -7,6 +8,9 @@ import {
 } from "../../api/products";
 import RankingSection from "./RankingSection";
 import Badge from "../../components/ui/Badge";
+import Button from "../../components/ui/Button";
+import { useCartStore } from "../order/cartStore";
+import { toast } from "sonner";
 
 export default function HomePage() {
   const [categories, setCategories] = useState<string[]>([]);
@@ -70,15 +74,9 @@ export default function HomePage() {
       {/* 히어로 배너 */}
       <section className="mt-4">
         <div className="max-w-6xl mx-auto px-4">
-          <div
-            className="flex gap-4 overflow-x-auto snap-x snap-mandatory rounded-2xl"
-            style={{ scrollBehavior: "smooth" }}
-          >
+          <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory rounded-2xl" style={{ scrollBehavior: "smooth" }}>
             {["retinol", "hydration", "lipcare"].map((seed, i) => (
-              <div
-                key={seed}
-                className="snap-center min-w-[90%] sm:min-w-[48%] md:min-w-[32%] relative"
-              >
+              <div key={seed} className="snap-center min-w-[90%] sm:min-w-[48%] md:min-w-[32%] relative">
                 <img
                   src={`https://picsum.photos/seed/${seed}/1200/400`}
                   alt={`banner-${i}`}
@@ -139,6 +137,8 @@ export default function HomePage() {
 }
 
 function ProductCard({ p, compact }: { p: Product; compact?: boolean }) {
+  const addItem = useCartStore(s => s.addItem);
+
   return (
     <article className="card flex h-full flex-col p-3">
       <div className={`${compact ? "h-32" : "h-40"} mb-3 w-full overflow-hidden rounded-xl bg-white`}>
@@ -157,7 +157,24 @@ function ProductCard({ p, compact }: { p: Product; compact?: boolean }) {
       <div className="mt-1 price font-bold">{p.price.toLocaleString()}원</div>
 
       <div className="mt-auto" />
-      <button className="btn-outline-brand mt-3 w-full">담기</button>
+
+      {/* ✅ 색 있는 버튼 + 담기 동작 */}
+      <Button
+        variant="solid"
+        className="mt-3 w-full"
+        onClick={() => {
+          addItem({
+            id: String(p.id),
+            name: p.title,
+            price: p.price,
+            imageUrl: p.thumbnail,
+            qty: 1,
+          });
+          toast.success("장바구니에 담겼습니다.");
+        }}
+      >
+        담기
+      </Button>
     </article>
   );
 }

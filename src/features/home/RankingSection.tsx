@@ -1,6 +1,9 @@
 import { useRef } from "react";
 import type { Product } from "../../api/products";
 import Badge from "../../components/ui/Badge";
+import Button from "../../components/ui/Button";
+import { useCartStore } from "../order/cartStore";
+import { toast } from "sonner";
 
 export default function RankingSection({
   products,
@@ -39,8 +42,7 @@ export default function RankingSection({
 
       <div
         ref={ref}
-        className="flex gap-4 overflow-x-auto overflow-y-hidden scroll-smooth px-10 py-1
-                   [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']"
+        className="flex gap-4 overflow-x-auto overflow-y-visible scroll-smooth px-10 py-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']"
       >
         {products.map((p, idx) => (
           <div key={p.id} className="min-w-[220px]">
@@ -54,6 +56,8 @@ export default function RankingSection({
 }
 
 function RankingCard({ p }: { p: Product }) {
+  const addItem = useCartStore(s => s.addItem);
+
   return (
     <article className="card flex h-full flex-col p-3">
       <div className="mb-3 h-32 w-full overflow-hidden rounded-xl bg-white">
@@ -64,7 +68,7 @@ function RankingCard({ p }: { p: Product }) {
 
       <div className="mt-1 flex items-center gap-2 text-sm">
         <span className="text-gray-500 capitalize">{p.category.replace("-", " ")}</span>
-        <Badge variant = "brand">
+        <Badge variant="brand">
           ★ {typeof p.rating === "number" ? p.rating.toFixed(1) : p.rating}
         </Badge>
       </div>
@@ -72,7 +76,24 @@ function RankingCard({ p }: { p: Product }) {
       <div className="mt-1 price font-bold">{p.price.toLocaleString()}원</div>
 
       <div className="mt-auto" />
-      <button className="btn-outline-brand mt-3 w-full">담기</button>
+
+      {/* ✅ 색 있는 버튼 + 담기 동작 */}
+      <Button
+        variant="solid"
+        className="mt-3 w-full"
+        onClick={() => {
+          addItem({
+            id: String(p.id),
+            name: p.title,
+            price: p.price,
+            imageUrl: p.thumbnail,
+            qty: 1,
+          });
+          toast.success("장바구니에 담겼습니다.");
+        }}
+      >
+        담기
+      </Button>
     </article>
   );
 }
