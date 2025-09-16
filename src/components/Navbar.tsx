@@ -1,53 +1,35 @@
-import { Link, useNavigate } from 'react-router-dom'
-import { useCartCount } from '../features/order/cartStore'
+import { Link } from "react-router-dom";
+import { useI18n } from "../lib/i18n";
 
 export default function Navbar() {
-  const navigate = useNavigate()
-  const count = useCartCount()
-  const badgeText = count > 99 ? '99+' : String(count)
+  const { t, lang, setLang } = useI18n();
 
   return (
-    <nav className="flex items-center justify-between px-6 py-4 border-b">
-      {/* 로고 */}
-      <h1
-        className="text-xl font-bold cursor-pointer tracking-tight"
-        onClick={() => navigate('/')}
-      >
-        K-Beauty
-      </h1>
+    <nav className="flex items-center justify-between h-14">
+      {/* 왼쪽 로고 */}
+      <Link to="/" className="font-extrabold text-2xl ink">
+        {t("brand")}
+      </Link>
 
-      {/* 가운데 링크들 */}
-      <div className="flex items-center gap-6 whitespace-nowrap">
-        <Link to="/catalog" className="hover:underline">카탈로그</Link>
-
-        {/* 장바구니: 인라인 배지로 겹침 방지 */}
-        <Link to="/cart" className="hover:underline inline-flex items-center gap-2">
-          장바구니
-          {count > 0 && (
-            <span
-              className="inline-flex items-center justify-center
-                        rounded-full bg-pink-600 text-white text-[11px] font-bold
-                        h-5 min-w-[20px] px-1.5 leading-none shadow-sm"
-              aria-label={`장바구니에 ${badgeText}개`}
-            >
-              {badgeText}
-            </span>
-          )}
-        </Link>
-
-
-        <Link to="/checkout" className="hover:underline">체크아웃</Link>
-        <Link to="/admin" className="hover:underline">관리</Link>
+      {/* 가운데 메뉴 */}
+      <div className="hidden sm:flex gap-6 text-sm text-gray-600">
+        <Link to="/catalog">{t("catalog")}</Link>
+        <Link to="/cart">{t("cart")}</Link>
+        <Link to="/checkout">{t("checkout")}</Link>
+        <Link to="/admin">{t("admin")}</Link>
       </div>
 
-      {/* 뒤로가기 */}
-      <button
-        onClick={() => navigate(-1)}
-        className="px-3 py-1 rounded-md border text-sm hover:bg-gray-50"
+      {/* 오른쪽 언어 선택 */}
+      <select
+        value={lang}
+        onChange={(e) => setLang(e.target.value as any)}
+        className="ml-4 rounded-md border px-2 py-1 text-sm"
       >
-        ← 뒤로가기
-      </button>
-
+        <option value="ko">한국어</option>
+        <option value="en">English</option>
+        <option value="ja">日本語</option>
+        <option value="zh">中文</option>
+      </select>
     </nav>
-  )
+  );
 }

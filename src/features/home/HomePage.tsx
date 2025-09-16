@@ -1,4 +1,3 @@
-// src/features/home/HomePage.tsx
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -11,8 +10,11 @@ import Badge from "../../components/ui/Badge";
 import Button from "../../components/ui/Button";
 import { useCartStore } from "../order/cartStore";
 import { toast } from "sonner";
+import { useI18n } from "../../lib/i18n";
+import { formatKrwWon, usdToKrw } from "../../lib/money"
 
 export default function HomePage() {
+  const { t } = useI18n();
   const [categories, setCategories] = useState<string[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -55,16 +57,16 @@ export default function HomePage() {
       {/* 상단 바 + 간단 검색 */}
       <header className="sticky top-0 z-10 bg-white/80 backdrop-blur border-b">
         <div className="max-w-6xl mx-auto flex items-center justify-between px-4 h-14">
-          <Link to="/" className="font-extrabold text-2xl ink">K-Beauty</Link>
+          <Link to="/" className="font-extrabold text-2xl ink">{t("brand")}</Link>
           <nav className="hidden sm:flex gap-6 text-sm text-gray-600">
-            <Link to="/catalog">카탈로그</Link>
-            <Link to="/cart">장바구니</Link>
-            <Link to="/checkout">체크아웃</Link>
-            <Link to="/admin">관리</Link>
+            <Link to="/catalog">{t("catalog")}</Link>
+            <Link to="/cart">{t("cart")}</Link>
+            <Link to="/checkout">{t("checkout")}</Link>
+            <Link to="/admin">{t("admin")}</Link>
           </nav>
           <div className="flex-1 max-w-md ml-4">
             <input
-              placeholder="상품, 브랜드, 성분 검색"
+              placeholder={t("searchPlaceholder")}
               className="w-full px-3 py-2 rounded-xl border outline-none"
             />
           </div>
@@ -74,9 +76,15 @@ export default function HomePage() {
       {/* 히어로 배너 */}
       <section className="mt-4">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory rounded-2xl" style={{ scrollBehavior: "smooth" }}>
+          <div
+            className="flex gap-4 overflow-x-auto snap-x snap-mandatory rounded-2xl"
+            style={{ scrollBehavior: "smooth" }}
+          >
             {["retinol", "hydration", "lipcare"].map((seed, i) => (
-              <div key={seed} className="snap-center min-w-[90%] sm:min-w-[48%] md:min-w-[32%] relative">
+              <div
+                key={seed}
+                className="snap-center min-w-[90%] sm:min-w-[48%] md:min-w-[32%] relative"
+              >
                 <img
                   src={`https://picsum.photos/seed/${seed}/1200/400`}
                   alt={`banner-${i}`}
@@ -96,7 +104,7 @@ export default function HomePage() {
       {/* 카테고리 퀵 메뉴 */}
       <section className="mt-8">
         <div className="max-w-6xl mx-auto px-4">
-          <h2 className="text-lg font-bold ink mb-3">카테고리</h2>
+          <h2 className="text-lg font-bold ink mb-3">{t("category")}</h2>
           <div className="flex gap-2 overflow-x-auto py-2">
             {categories.map((c) => (
               <Link
@@ -115,8 +123,8 @@ export default function HomePage() {
       <section className="mt-8">
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex items-baseline justify-between">
-            <h2 className="text-lg font-bold ink">오늘의 특가</h2>
-            <Link to="/catalog" className="text-sm text-brand-600">더 보기 →</Link>
+            <h2 className="text-lg font-bold ink">{t("todaysDeals")}</h2>
+            <Link to="/catalog" className="text-sm text-brand-600">{t("seeMore")} →</Link>
           </div>
           <div className="mt-4 grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6">
             {todaysDeals.map((p) => (
@@ -129,7 +137,7 @@ export default function HomePage() {
       {/* 랭킹 TOP10 */}
       <section className="mt-10">
         <div className="max-w-6xl mx-auto px-4">
-          <RankingSection products={topRank} />
+          <RankingSection products={topRank} title={t("rankingTop10")} />
         </div>
       </section>
     </div>
@@ -137,7 +145,8 @@ export default function HomePage() {
 }
 
 function ProductCard({ p, compact }: { p: Product; compact?: boolean }) {
-  const addItem = useCartStore(s => s.addItem);
+  const { t } = useI18n();
+  const addItem = useCartStore((s) => s.addItem);
 
   return (
     <article className="card flex h-full flex-col p-3">
@@ -154,11 +163,11 @@ function ProductCard({ p, compact }: { p: Product; compact?: boolean }) {
         </Badge>
       </div>
 
-      <div className="mt-1 price font-bold">{p.price.toLocaleString()}원</div>
+      {/* 가격: USD → KRW 변환 표시 */}
+      <div className="mt-1 price font-bold">{formatKrwWon(p.price)}</div>
 
       <div className="mt-auto" />
 
-      {/* ✅ 색 있는 버튼 + 담기 동작 */}
       <Button
         variant="solid"
         className="mt-3 w-full"
@@ -166,14 +175,14 @@ function ProductCard({ p, compact }: { p: Product; compact?: boolean }) {
           addItem({
             id: String(p.id),
             name: p.title,
-            price: p.price,
+            price: usdToKrw(p.price), // 카트 내부도 KRW로
             imageUrl: p.thumbnail,
             qty: 1,
           });
           toast.success("장바구니에 담겼습니다.");
         }}
       >
-        담기
+        {t("addToCart")}
       </Button>
     </article>
   );
