@@ -174,18 +174,48 @@ export default function CatalogPage() {
         <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
           {filtered.map(p => (
             <Card key={p.id}>
-              <img src={p.imageUrl} alt={p.name} className="w-full h-44 object-cover rounded-xl mb-3" />
-              <div className="font-semibold">{p.name}</div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500 capitalize">{p.category.replace('-', ' ')}</span>
+              {/* 이미지 영역 */}
+              <div className="mb-3 h-44 w-full overflow-hidden rounded-xl bg-white">
+                <img
+                  src={p.imageUrl}
+                  alt={p.name}
+                  className="h-full w-full object-contain"
+                />
+              </div>
+
+              {/* 제목: 최소 높이를 줘서 줄 수가 달라도 높이 일정 */}
+              <div className="font-semibold line-clamp-2 min-h-[3rem]">
+                {p.name}
+              </div>
+
+              {/* 카테고리 + 평점 */}
+              <div className="mt-1 flex items-center gap-2">
+                <span className="text-sm text-gray-500 capitalize">
+                  {p.category.replace('-', ' ')}
+                </span>
                 {p.rating && <Badge>★ {p.rating}</Badge>}
               </div>
-              <div className="mt-1 text-pink-600 font-bold">{p.price.toLocaleString()}원</div>
+
+              {/* 가격 */}
+              <div className="mt-1 text-pink-600 font-bold">
+                {p.price.toLocaleString()}원
+              </div>
+
+              {/* 남는 공간을 채우고 버튼을 맨 아래로 밀기 */}
+              <div className="mt-auto" />
+
+              {/* 담기 버튼 */}
               <Button
                 variant="solid"
                 className="mt-3 w-full"
                 onClick={() => {
-                  addItem({ id: p.id, name: p.name, price: p.price, imageUrl: p.imageUrl, qty: 1 })
+                  addItem({
+                    id: p.id,
+                    name: p.name,
+                    price: p.price,
+                    imageUrl: p.imageUrl,
+                    qty: 1,
+                  })
                   toast.success('장바구니에 담겼습니다.')
                 }}
               >
@@ -193,6 +223,7 @@ export default function CatalogPage() {
               </Button>
             </Card>
           ))}
+
         </div>
       )}
     </div>

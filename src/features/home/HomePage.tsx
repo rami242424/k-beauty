@@ -1,4 +1,3 @@
-// src/features/home/HomePage.tsx
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -6,6 +5,7 @@ import {
   fetchBeautyProducts,
   type Product,
 } from "../../api/products";
+import RankingSection from "./RankingSection"; 
 
 export default function HomePage() {
   const [categories, setCategories] = useState<string[]>([]);
@@ -29,7 +29,9 @@ export default function HomePage() {
         if (mounted) setLoading(false);
       }
     })();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   // 파생 데이터
@@ -49,7 +51,9 @@ export default function HomePage() {
       {/* 상단 바 + 간단 검색 */}
       <header className="sticky top-0 z-10 bg-white/80 backdrop-blur border-b">
         <div className="max-w-6xl mx-auto flex items-center justify-between px-4 h-14">
-          <Link to="/" className="font-extrabold text-2xl">K-Beauty</Link>
+          <Link to="/" className="font-extrabold text-2xl">
+            K-Beauty
+          </Link>
           <nav className="hidden sm:flex gap-6 text-sm text-gray-600">
             <Link to="/catalog">카탈로그</Link>
             <Link to="/cart">장바구니</Link>
@@ -65,13 +69,18 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* 히어로(수평 스크롤) */}
+      {/* 히어로(수평 스크롤 배너) */}
       <section className="mt-4">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory rounded-2xl"
-               style={{ scrollBehavior: "smooth" }}>
+          <div
+            className="flex gap-4 overflow-x-auto snap-x snap-mandatory rounded-2xl"
+            style={{ scrollBehavior: "smooth" }}
+          >
             {["retinol", "hydration", "lipcare"].map((seed, i) => (
-              <div key={seed} className="snap-center min-w-[90%] sm:min-w-[48%] md:min-w-[32%] relative">
+              <div
+                key={seed}
+                className="snap-center min-w-[90%] sm:min-w-[48%] md:min-w-[32%] relative"
+              >
                 <img
                   src={`https://picsum.photos/seed/${seed}/1200/400`}
                   alt={`banner-${i}`}
@@ -79,7 +88,9 @@ export default function HomePage() {
                 />
                 <div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-black/40 to-transparent" />
                 <div className="absolute bottom-4 left-4 text-white">
-                  <div className="text-xl font-semibold">NEW 프로모션 {i + 1}</div>
+                  <div className="text-xl font-semibold">
+                    NEW 프로모션 {i + 1}
+                  </div>
                   <p className="text-sm opacity-90">지금 가장 핫한 제품</p>
                 </div>
               </div>
@@ -88,7 +99,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 카테고리 퀵 메뉴 (beauty / skin-care / fragrances) */}
+      {/* 카테고리 퀵 메뉴 */}
       <section className="mt-8">
         <div className="max-w-6xl mx-auto px-4">
           <h2 className="text-lg font-bold mb-3">카테고리</h2>
@@ -111,26 +122,21 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex items-baseline justify-between">
             <h2 className="text-lg font-bold">오늘의 특가</h2>
-            <Link to="/catalog" className="text-sm text-blue-600">더 보기 →</Link>
+            <Link to="/catalog" className="text-sm text-blue-600">
+              더 보기 →
+            </Link>
           </div>
           <div className="mt-4 grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6">
-            {todaysDeals.map((p) => <ProductCard key={p.id} p={p} />)}
+            {todaysDeals.map((p) => (
+              <ProductCard key={p.id} p={p} />
+            ))}
           </div>
         </div>
       </section>
 
-      {/* 랭킹 TOP10 */}
       <section className="mt-10">
         <div className="max-w-6xl mx-auto px-4">
-          <h2 className="text-lg font-bold mb-3">랭킹 TOP10</h2>
-          <div className="flex gap-4 overflow-x-auto pb-2">
-            {topRank.map((p, idx) => (
-              <div key={p.id} className="min-w-[220px]">
-                <div className="text-xs text-gray-500 mb-1">#{idx + 1}</div>
-                <ProductCard p={p} compact />
-              </div>
-            ))}
-          </div>
+          <RankingSection products={topRank} />
         </div>
       </section>
     </div>
@@ -139,17 +145,37 @@ export default function HomePage() {
 
 function ProductCard({ p, compact }: { p: Product; compact?: boolean }) {
   return (
-    <article className="rounded-2xl border p-3 shadow-sm hover:shadow transition bg-white">
-      <img
-        src={p.thumbnail}
-        alt={p.title}
-        className={`w-full ${compact ? "h-32" : "h-40"} object-cover rounded-xl mb-3`}
-      />
-      <div className="font-semibold line-clamp-2">{p.title}</div>
-      <div className="text-sm text-gray-500 capitalize">{p.category.replace("-", " ")}</div>
+    <article className="flex h-full flex-col rounded-2xl border p-3 shadow-sm hover:shadow transition bg-white">
+      <div
+        className={`${
+          compact ? "h-32" : "h-40"
+        } mb-3 w-full overflow-hidden rounded-xl bg-white`}
+      >
+        <img
+          src={p.thumbnail}
+          alt={p.title}
+          className="h-full w-full object-contain"
+        />
+      </div>
+
+      <div className="font-semibold line-clamp-2 min-h-[3rem]">{p.title}</div>
+
+      <div className="mt-1 flex items-center gap-2 text-sm">
+        <span className="text-gray-500 capitalize">
+          {p.category.replace("-", " ")}
+        </span>
+        <span className="text-xs text-yellow-600">
+          ★ {p.rating.toFixed ? p.rating.toFixed(1) : p.rating}
+        </span>
+      </div>
+
       <div className="mt-1 font-bold">{p.price.toLocaleString()}원</div>
-      <div className="text-xs text-yellow-600 mt-1">★ {p.rating.toFixed(1)}</div>
-      <button className="mt-3 w-full py-2 rounded-xl border hover:bg-gray-50">담기</button>
+
+      <div className="mt-auto" />
+
+      <button className="mt-3 w-full rounded-xl border py-2 hover:bg-gray-50">
+        담기
+      </button>
     </article>
   );
 }
