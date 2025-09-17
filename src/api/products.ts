@@ -1,4 +1,3 @@
-// src/api/products.ts
 export type Product = {
   id: number;
   title: string;
