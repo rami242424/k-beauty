@@ -179,7 +179,7 @@ function ProductCard({ p, compact, lang }: { p: Product; compact?: boolean; lang
             imageUrl: p.thumbnail,
             qty: 1,
           });
-          toast.success("장바구니에 담겼습니다.");
+          toast.success(t("toast_addedToCart"));
         }}
       >
         {t("addToCart")}

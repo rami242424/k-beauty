@@ -2,7 +2,6 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 export type Lang = "ko" | "en" | "ja" | "zh";
 
-// 화면에서 쓸 텍스트 키들
 export type DictKey =
   | "brand"
   | "catalog"
@@ -16,7 +15,7 @@ export type DictKey =
   | "seeMore"
   | "addToCart"
   | "price"
-  // ✅ 컨트롤바/상태 문구 추가
+  // 컨트롤바/상태
   | "category_all"
   | "category_beauty"
   | "category_skin_care"
@@ -26,7 +25,9 @@ export type DictKey =
   | "sortPriceDesc"
   | "sortRatingDesc"
   | "reset"
-  | "noResults";
+  | "noResults"
+  // ✅ 토스트/알림
+  | "toast_addedToCart";
 
 const dict: Record<Lang, Record<DictKey, string>> = {
   ko: {
@@ -42,7 +43,6 @@ const dict: Record<Lang, Record<DictKey, string>> = {
     seeMore: "더 보기",
     addToCart: "담기",
     price: "가격",
-    // 추가
     category_all: "전체",
     category_beauty: "뷰티",
     category_skin_care: "스킨케어",
@@ -53,6 +53,8 @@ const dict: Record<Lang, Record<DictKey, string>> = {
     sortRatingDesc: "평점 높은순",
     reset: "초기화",
     noResults: "조건에 맞는 상품이 없습니다.",
+    // ✅ 토스트
+    toast_addedToCart: "장바구니에 담겼습니다.",
   },
   en: {
     brand: "K-Beauty",
@@ -67,7 +69,6 @@ const dict: Record<Lang, Record<DictKey, string>> = {
     seeMore: "See more",
     addToCart: "Add",
     price: "Price",
-    // 추가
     category_all: "All",
     category_beauty: "Beauty",
     category_skin_care: "Skin care",
@@ -78,6 +79,8 @@ const dict: Record<Lang, Record<DictKey, string>> = {
     sortRatingDesc: "Rating: High to Low",
     reset: "Reset",
     noResults: "No products match your filters.",
+    // ✅ toast
+    toast_addedToCart: "Added to cart.",
   },
   ja: {
     brand: "K-Beauty",
@@ -92,7 +95,6 @@ const dict: Record<Lang, Record<DictKey, string>> = {
     seeMore: "もっと見る",
     addToCart: "追加",
     price: "価格",
-    // 추가
     category_all: "すべて",
     category_beauty: "ビューティー",
     category_skin_care: "スキンケア",
@@ -103,6 +105,8 @@ const dict: Record<Lang, Record<DictKey, string>> = {
     sortRatingDesc: "評価が高い順",
     reset: "リセット",
     noResults: "条件に合う商品がありません。",
+    // ✅ toast
+    toast_addedToCart: "カートに追加しました。",
   },
   zh: {
     brand: "K-Beauty",
@@ -117,7 +121,6 @@ const dict: Record<Lang, Record<DictKey, string>> = {
     seeMore: "查看更多",
     addToCart: "加入",
     price: "价格",
-    // 추가
     category_all: "全部",
     category_beauty: "美妆",
     category_skin_care: "护肤",
@@ -128,36 +131,32 @@ const dict: Record<Lang, Record<DictKey, string>> = {
     sortRatingDesc: "评分从高到低",
     reset: "重置",
     noResults: "没有符合条件的商品。",
+    // ✅ toast
+    toast_addedToCart: "已加入购物车。",
   },
 };
 
-type Ctx = {
-  lang: Lang;
-  setLang: (l: Lang) => void;
-  t: (k: DictKey) => string;
-};
-
+type Ctx = { lang: Lang; setLang: (l: Lang) => void; t: (k: DictKey) => string; };
 const I18nCtx = createContext<Ctx | null>(null);
 
 export function I18nProvider({ children, defaultLang = "ko" as Lang }) {
-  const [lang, setLang] = useState<Lang>(defaultLang);
+  const [lang, setLang] = useState<Lang>(() => {
+    try {
+      return (localStorage.getItem("lang") as Lang) || defaultLang;
+    } catch {
+      return defaultLang;
+    }
+  });
 
-  useEffect(() => {
-    const saved = (localStorage.getItem("lang") as Lang) || defaultLang;
-    setLang(saved);
-  }, [defaultLang]);
 
-  const value = useMemo<Ctx>(
-    () => ({
-      lang,
-      setLang: (l: Lang) => {
-        setLang(l);
-        localStorage.setItem("lang", l);
-      },
-      t: (k) => dict[lang][k],
-    }),
-    [lang]
-  );
+  const value = useMemo<Ctx>(() => ({
+    lang,
+    setLang: (l: Lang) => {
+      setLang(l);
+      localStorage.setItem("lang", l);
+    },
+    t: (k) => dict[lang][k],
+  }), [lang]);
 
   return <I18nCtx.Provider value={value}>{children}</I18nCtx.Provider>;
 }

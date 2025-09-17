@@ -221,7 +221,7 @@ export default function CatalogPage() {
                     imageUrl: p.imageUrl,
                     qty: 1,
                   });
-                  toast.success(t("addToCart"));
+                  toast.success(t("toast_addedToCart"));
                 }}
               >
                 {t("addToCart")}
