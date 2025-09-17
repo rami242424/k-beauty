@@ -1,19 +1,26 @@
 import { Link, useLocation } from "react-router-dom";
+import { useI18n } from "../../lib/i18n";
+import { formatFromUSD } from "../../lib/money";
 
+export default function CheckoutSuccessPage() {
+  const { state } = useLocation() as { state?: { totalUsd?: number } };
+  const totalUsd = state?.totalUsd ?? 0;
+  const { t, lang } = useI18n();
 
-export default function CheckoutSuccessPage(){
-    const { state } = useLocation() as { state?: { total?: number } };
-    const total = state?.total ?? 0;
-
-    return (
-        <div className="mx-auto max-w-[var(--container)] px-4 py-6">
-            <h1>주문이 완료되었습니다</h1>
-            <p>결제 금액 : <b>{total.toLocaleString()}원</b></p>
-            <div>
-                <Link to="/catalog">계속 쇼핑하기</Link>
-                <Link to="/admin">관리페이지</Link>
-            </div>
-        </div>
-
-    );
+  return (
+    <div className="mx-auto max-w-[var(--container)] px-4 py-6 space-y-4">
+      <h1 className="text-2xl font-bold">{t("order_complete")}</h1>
+      <p>
+        {t("paid_amount")} : <b>{formatFromUSD(totalUsd, lang)}</b>
+      </p>
+      <div className="flex gap-3">
+        <Link to="/catalog" className="rounded-xl border px-4 py-2">
+          {t("continue_shopping")}
+        </Link>
+        <Link to="/admin" className="rounded-xl border px-4 py-2">
+          {t("admin")}
+        </Link>
+      </div>
+    </div>
+  );
 }

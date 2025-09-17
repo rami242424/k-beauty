@@ -4,8 +4,8 @@ import Badge from "../../components/ui/Badge";
 import Button from "../../components/ui/Button";
 import { useCartStore } from "../order/cartStore";
 import { toast } from "sonner";
-import { formatFromUSD, numberFromUSD } from "../../lib/money"; // ✅
-import { useI18n } from "../../lib/i18n"; // ✅ 버튼/언어
+import { formatFromUSD } from "../../lib/money";
+import { useI18n } from "../../lib/i18n";
 
 export default function RankingSection({
   products,
@@ -58,8 +58,8 @@ export default function RankingSection({
 }
 
 function RankingCard({ p }: { p: Product }) {
-  const addItem = useCartStore(s => s.addItem);
-  const { lang, t } = useI18n(); // ✅
+  const addItem = useCartStore((s) => s.addItem);
+  const { lang, t } = useI18n();
 
   return (
     <article className="card flex h-full flex-col p-3">
@@ -71,12 +71,10 @@ function RankingCard({ p }: { p: Product }) {
 
       <div className="mt-1 flex items-center gap-2 text-sm">
         <span className="text-gray-500 capitalize">{p.category.replace("-", " ")}</span>
-        <Badge variant="brand">
-          ★ {typeof p.rating === "number" ? p.rating.toFixed(1) : p.rating}
-        </Badge>
+        <Badge variant="brand">★ {typeof p.rating === "number" ? p.rating.toFixed(1) : p.rating}</Badge>
       </div>
 
-      {/* ✅ 기존 `...원` 하드코딩 제거 → 다국어 통화 표기 */}
+      {/* ✅ USD → 현재 언어 통화로 변환/표기 */}
       <div className="mt-1 price font-bold">{formatFromUSD(p.price, lang)}</div>
 
       <div className="mt-auto" />
@@ -88,7 +86,7 @@ function RankingCard({ p }: { p: Product }) {
           addItem({
             id: String(p.id),
             name: p.title,
-            price: numberFromUSD(p.price, lang), // ✅ 카트 금액도 현재 통화로
+            priceUsd: p.price, // ✅ USD 기준가 저장
             imageUrl: p.thumbnail,
             qty: 1,
           });

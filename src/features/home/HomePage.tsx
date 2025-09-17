@@ -1,5 +1,6 @@
+// src/features/home/HomePage.tsx
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   fetchBeautyCategories,
   fetchBeautyProducts,
@@ -11,10 +12,13 @@ import Button from "../../components/ui/Button";
 import { useCartStore } from "../order/cartStore";
 import { toast } from "sonner";
 import { useI18n } from "../../lib/i18n";
-import { formatFromUSD, numberFromUSD } from "../../lib/money"; // ✅ 통화 유틸
+import { formatFromUSD } from "../../lib/money";
 
 export default function HomePage() {
-  const { t, lang } = useI18n(); // ✅ 현재 언어
+  const { t, lang } = useI18n();
+  const navigate = useNavigate();          // ✅ 검색 이동용
+  const [q, setQ] = useState("");          // ✅ 검색어 상태
+
   const [categories, setCategories] = useState<string[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,26 +56,29 @@ export default function HomePage() {
 
   if (loading) return <div className="p-6 text-gray-600">로딩 중...</div>;
 
+  // ✅ 검색 실행: 엔터 시 카탈로그로 이동
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const query = q.trim();
+    navigate(query ? `/catalog?q=${encodeURIComponent(query)}` : "/catalog");
+  };
+
   return (
     <div className="pb-16">
-      {/* 상단 바 + 간단 검색 */}
-      <header className="sticky top-0 z-10 bg-white/80 backdrop-blur border-b">
-        <div className="max-w-6xl mx-auto flex items-center justify-between px-4 h-14">
-          <Link to="/" className="font-extrabold text-2xl ink">{t("brand")}</Link>
-          <nav className="hidden sm:flex gap-6 text-sm text-gray-600">
-            <Link to="/catalog">{t("catalog")}</Link>
-            <Link to="/cart">{t("cart")}</Link>
-            <Link to="/checkout">{t("checkout")}</Link>
-            <Link to="/admin">{t("admin")}</Link>
-          </nav>
-          <div className="flex-1 max-w-md ml-4">
+      {/* ✅ 홈 전용 검색바 (전역 Navbar와 별개) */}
+      <section className="mt-4">
+        <div className="max-w-6xl mx-auto px-4">
+          <form onSubmit={onSubmit} className="w-full">
             <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
               placeholder={t("searchPlaceholder")}
+              aria-label={t("searchPlaceholder")}
               className="w-full px-3 py-2 rounded-xl border outline-none"
             />
-          </div>
+          </form>
         </div>
-      </header>
+      </section>
 
       {/* 히어로 배너 */}
       <section className="mt-4">
@@ -124,11 +131,13 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex items-baseline justify-between">
             <h2 className="text-lg font-bold ink">{t("todaysDeals")}</h2>
-            <Link to="/catalog" className="text-sm text-brand-600">{t("seeMore")} →</Link>
+            <Link to="/catalog" className="text-sm text-brand-600">
+              {t("seeMore")} →
+            </Link>
           </div>
           <div className="mt-4 grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6">
             {todaysDeals.map((p) => (
-              <ProductCard key={p.id} p={p} lang={lang} />
+              <ProductCard key={p.id} p={p} />
             ))}
           </div>
         </div>
@@ -144,8 +153,8 @@ export default function HomePage() {
   );
 }
 
-function ProductCard({ p, compact, lang }: { p: Product; compact?: boolean; lang: "ko"|"en"|"ja"|"zh" }) {
-  const { t } = useI18n();
+function ProductCard({ p, compact }: { p: Product; compact?: boolean }) {
+  const { t, lang } = useI18n();
   const addItem = useCartStore((s) => s.addItem);
 
   return (
@@ -163,7 +172,7 @@ function ProductCard({ p, compact, lang }: { p: Product; compact?: boolean; lang
         </Badge>
       </div>
 
-      {/* ✅ 가격: USD 기준 → 현재 언어 통화로 표기 */}
+      {/* 가격: USD → 현재 언어 통화로 변환/표기 */}
       <div className="mt-1 price font-bold">{formatFromUSD(p.price, lang)}</div>
 
       <div className="mt-auto" />
@@ -175,7 +184,7 @@ function ProductCard({ p, compact, lang }: { p: Product; compact?: boolean; lang
           addItem({
             id: String(p.id),
             name: p.title,
-            price: numberFromUSD(p.price, lang), // ✅ 장바구니에도 현재 통화로
+            priceUsd: p.price, // USD 기준가 저장
             imageUrl: p.thumbnail,
             qty: 1,
           });

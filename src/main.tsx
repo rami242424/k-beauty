@@ -14,8 +14,8 @@ import { I18nProvider } from "./lib/i18n.tsx";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
-      <I18nProvider defaultLang="ko">   {/* ✅ 다국어 Provider 추가 */}
-        <Toaster richColors position="top-center" />
+      <I18nProvider defaultLang="ko">  
+        <Toaster richColors position="top-center" duration={1000} />
         <AppLayout>
           <Routes>
             <Route path="/" element={<App />} />

@@ -1,65 +1,42 @@
-import { useI18n } from "./i18n";
+// src/lib/money.ts
+import type { Lang } from "./i18n";
 
-export type CurrencyCode = "KRW" | "USD" | "JPY" | "CNY";
-
-const LANG_TO: Record<ReturnType<typeof useI18n>["lang"], { locale: string; currency: CurrencyCode }> = {
-  ko: { locale: "ko-KR", currency: "KRW" },
-  en: { locale: "en-US", currency: "USD" },
-  ja: { locale: "ja-JP", currency: "JPY" },
-  zh: { locale: "zh-CN", currency: "CNY" },
+const RATES: Record<Lang, { code: string; locale: string; rate: number }> = {
+  ko: { code: "KRW", locale: "ko-KR", rate: 1350 }, // USD→KRW
+  en: { code: "USD", locale: "en-US", rate: 1 },
+  ja: { code: "JPY", locale: "ja-JP", rate: 150 },  // USD→JPY
+  zh: { code: "CNY", locale: "zh-CN", rate: 7.2 },  // USD→CNY
 };
 
-const DEFAULT_RATES: Record<CurrencyCode, number> = {
-  USD: 1,
-  KRW: 1350,
-  JPY: 150,
-  CNY: 7.2,
-};
-
-const ROUND_RULE: Record<CurrencyCode, { min: number; max: number }> = {
-  KRW: { min: 0, max: 0 },
-  JPY: { min: 0, max: 0 },
-  USD: { min: 2, max: 2 },
-  CNY: { min: 2, max: 2 },
-};
-
-export function convertFromUSD(
-  usd: number,
-  target: CurrencyCode,
-  rates: Record<CurrencyCode, number> = DEFAULT_RATES
-): number {
-  const rate = rates[target] ?? 1;
-  return usd * rate;
+// 구버전 호환 (네가 초기에 쓰던 API들 유지)
+export const USD_TO_KRW = 1350;
+export function usdToKrw(usd: number, rate = USD_TO_KRW): number {
+  return Math.round(usd * rate);
+}
+export function roundKrwHundreds(krw: number): number {
+  return Math.round(krw / 100) * 100;
+}
+export function formatKrwWon(usd: number, rate = USD_TO_KRW): string {
+  const krw = usdToKrw(usd, rate);
+  const rounded = roundKrwHundreds(krw);
+  return `${rounded.toLocaleString("ko-KR")}원`;
 }
 
-export function formatFromUSD(
-  usd: number,
-  lang: keyof typeof LANG_TO,
-  rates: Record<CurrencyCode, number> = DEFAULT_RATES
-): string {
-  const { locale, currency } = LANG_TO[lang];
-  const rule = ROUND_RULE[currency];
-  const rate = rates[currency] ?? 1;
-  const amount = usd * rate;
-
+// 신규 API
+function roundJPY(n: number) { return Math.round(n); }
+export function numberFromUSD(usd: number, lang: Lang): number {
+  const r = RATES[lang].rate;
+  let v = usd * r;
+  if (lang === "ko") v = Math.round(v / 100) * 100;
+  if (lang === "ja") v = roundJPY(v);
+  return v;
+}
+export function formatFromUSD(usd: number, lang: Lang): string {
+  const { code, locale } = RATES[lang];
+  const n = numberFromUSD(usd, lang);
   return new Intl.NumberFormat(locale, {
     style: "currency",
-    currency,
-    minimumFractionDigits: rule.min,
-    maximumFractionDigits: rule.max,
-  }).format(amount);
-}
-
-export function numberFromUSD(
-  usd: number,
-  lang: keyof typeof LANG_TO,
-  rates: Record<CurrencyCode, number> = DEFAULT_RATES
-): number {
-  const { currency } = LANG_TO[lang];
-  const rate = rates[currency] ?? 1;
-  const rule = ROUND_RULE[currency];
-  const amount = usd * rate;
-
-  const factor = Math.pow(10, rule.max);
-  return Math.round(amount * factor) / factor;
+    currency: code,
+    maximumFractionDigits: lang === "ja" || lang === "ko" ? 0 : 2,
+  }).format(n);
 }

@@ -14,12 +14,12 @@ import {
   type BeautyCategory,
 } from "../../api/products";
 import { useI18n, type DictKey } from "../../lib/i18n";
-import { formatFromUSD, numberFromUSD } from "../../lib/money";
+import { formatFromUSD } from "../../lib/money";
 
 const categories = ["all", "beauty", "skin-care", "fragrances"] as const;
 const sorts = ["recent", "price-asc", "price-desc", "rating-desc"] as const;
 
-// ✅ 카테고리 코드 → 라벨 키 매핑
+// 카테고리 코드 → 라벨 키 매핑
 const categoryLabelKey: Record<(typeof categories)[number], DictKey> = {
   all: "category_all",
   beauty: "category_beauty",
@@ -27,7 +27,7 @@ const categoryLabelKey: Record<(typeof categories)[number], DictKey> = {
   fragrances: "category_fragrances",
 };
 
-// ✅ 정렬 코드 → 라벨 키 매핑
+// 정렬 코드 → 라벨 키 매핑
 const sortLabelKey: Record<(typeof sorts)[number], DictKey> = {
   "recent": "sortRecent",
   "price-asc": "sortPriceAsc",
@@ -39,7 +39,7 @@ function mapToViewProduct(p: ApiProduct): ViewProduct {
   return {
     id: String(p.id),
     name: p.title,
-    price: p.price, // USD (표시는 언어 통화로 변환)
+    price: p.price, // USD
     category: p.category,
     imageUrl: p.thumbnail,
     rating: p.rating,
@@ -131,7 +131,7 @@ export default function CatalogPage() {
     <div className="mx-auto max-w-[var(--container)] px-4 py-6">
       <h1 className="text-2xl font-bold ink mb-4">{t("catalog")}</h1>
 
-      {/* ✅ 컨트롤바 (다국어) */}
+      {/* 컨트롤바 (다국어) */}
       <div className="flex flex-col md:flex-row gap-3 md:items-center mb-4">
         <input
           className="flex-1 rounded-xl border px-3 py-2"
@@ -172,7 +172,7 @@ export default function CatalogPage() {
         </button>
       </div>
 
-      {/* 로딩 스켈레톤 / 빈 결과 문구도 i18n */}
+      {/* 로딩/리스트 */}
       {loading ? (
         <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
@@ -191,15 +191,9 @@ export default function CatalogPage() {
           {filtered.map((p) => (
             <Card key={p.id} className="flex h-full flex-col p-3">
               <div className="mb-3 h-44 w-full overflow-hidden rounded-xl bg-white">
-                <img
-                  src={p.imageUrl}
-                  alt={p.name}
-                  className="h-full w-full object-contain"
-                />
+                <img src={p.imageUrl} alt={p.name} className="h-full w-full object-contain" />
               </div>
-              <div className="font-semibold line-clamp-2 min-h-[3rem] ink">
-                {p.name}
-              </div>
+              <div className="font-semibold line-clamp-2 min-h-[3rem] ink">{p.name}</div>
               <div className="mt-1 flex items-center gap-2">
                 <span className="text-sm text-gray-500 capitalize">
                   {p.category.replace("-", " ")}
@@ -207,7 +201,7 @@ export default function CatalogPage() {
                 {p.rating && <Badge variant="brand">★ {p.rating}</Badge>}
               </div>
 
-              {/* 가격: USD → 현재 언어 통화로 변환/표기 */}
+              {/* ✅ 가격: USD → 현재 언어 통화로 변환/표기 */}
               <div className="mt-1 price font-bold">{formatFromUSD(p.price, lang)}</div>
 
               <Button
@@ -217,7 +211,7 @@ export default function CatalogPage() {
                   addItem({
                     id: p.id,
                     name: p.name,
-                    price: numberFromUSD(p.price, lang),
+                    priceUsd: p.price, // ✅ USD 기준가 저장
                     imageUrl: p.imageUrl,
                     qty: 1,
                   });
