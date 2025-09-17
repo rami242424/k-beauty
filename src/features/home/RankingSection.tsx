@@ -4,6 +4,8 @@ import Badge from "../../components/ui/Badge";
 import Button from "../../components/ui/Button";
 import { useCartStore } from "../order/cartStore";
 import { toast } from "sonner";
+import { formatFromUSD, numberFromUSD } from "../../lib/money"; // ✅
+import { useI18n } from "../../lib/i18n"; // ✅ 버튼/언어
 
 export default function RankingSection({
   products,
@@ -57,6 +59,7 @@ export default function RankingSection({
 
 function RankingCard({ p }: { p: Product }) {
   const addItem = useCartStore(s => s.addItem);
+  const { lang, t } = useI18n(); // ✅
 
   return (
     <article className="card flex h-full flex-col p-3">
@@ -73,11 +76,11 @@ function RankingCard({ p }: { p: Product }) {
         </Badge>
       </div>
 
-      <div className="mt-1 price font-bold">{p.price.toLocaleString()}원</div>
+      {/* ✅ 기존 `...원` 하드코딩 제거 → 다국어 통화 표기 */}
+      <div className="mt-1 price font-bold">{formatFromUSD(p.price, lang)}</div>
 
       <div className="mt-auto" />
 
-      {/* ✅ 색 있는 버튼 + 담기 동작 */}
       <Button
         variant="solid"
         className="mt-3 w-full"
@@ -85,14 +88,14 @@ function RankingCard({ p }: { p: Product }) {
           addItem({
             id: String(p.id),
             name: p.title,
-            price: p.price,
+            price: numberFromUSD(p.price, lang), // ✅ 카트 금액도 현재 통화로
             imageUrl: p.thumbnail,
             qty: 1,
           });
           toast.success("장바구니에 담겼습니다.");
         }}
       >
-        담기
+        {t("addToCart")}
       </Button>
     </article>
   );

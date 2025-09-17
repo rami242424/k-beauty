@@ -11,10 +11,10 @@ import Button from "../../components/ui/Button";
 import { useCartStore } from "../order/cartStore";
 import { toast } from "sonner";
 import { useI18n } from "../../lib/i18n";
-import { formatKrwWon, usdToKrw } from "../../lib/money"
+import { formatFromUSD, numberFromUSD } from "../../lib/money"; // ✅ 통화 유틸
 
 export default function HomePage() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n(); // ✅ 현재 언어
   const [categories, setCategories] = useState<string[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -128,7 +128,7 @@ export default function HomePage() {
           </div>
           <div className="mt-4 grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6">
             {todaysDeals.map((p) => (
-              <ProductCard key={p.id} p={p} />
+              <ProductCard key={p.id} p={p} lang={lang} />
             ))}
           </div>
         </div>
@@ -144,7 +144,7 @@ export default function HomePage() {
   );
 }
 
-function ProductCard({ p, compact }: { p: Product; compact?: boolean }) {
+function ProductCard({ p, compact, lang }: { p: Product; compact?: boolean; lang: "ko"|"en"|"ja"|"zh" }) {
   const { t } = useI18n();
   const addItem = useCartStore((s) => s.addItem);
 
@@ -163,8 +163,8 @@ function ProductCard({ p, compact }: { p: Product; compact?: boolean }) {
         </Badge>
       </div>
 
-      {/* 가격: USD → KRW 변환 표시 */}
-      <div className="mt-1 price font-bold">{formatKrwWon(p.price)}</div>
+      {/* ✅ 가격: USD 기준 → 현재 언어 통화로 표기 */}
+      <div className="mt-1 price font-bold">{formatFromUSD(p.price, lang)}</div>
 
       <div className="mt-auto" />
 
@@ -175,7 +175,7 @@ function ProductCard({ p, compact }: { p: Product; compact?: boolean }) {
           addItem({
             id: String(p.id),
             name: p.title,
-            price: usdToKrw(p.price), // 카트 내부도 KRW로
+            price: numberFromUSD(p.price, lang), // ✅ 장바구니에도 현재 통화로
             imageUrl: p.thumbnail,
             qty: 1,
           });

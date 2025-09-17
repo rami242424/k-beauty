@@ -1,10 +1,7 @@
-// src/lib/money.ts
 import { useI18n } from "./i18n";
 
-// 지원 통화 코드
 export type CurrencyCode = "KRW" | "USD" | "JPY" | "CNY";
 
-// 언어 → 로케일/통화 매핑
 const LANG_TO: Record<ReturnType<typeof useI18n>["lang"], { locale: string; currency: CurrencyCode }> = {
   ko: { locale: "ko-KR", currency: "KRW" },
   en: { locale: "en-US", currency: "USD" },
@@ -12,7 +9,6 @@ const LANG_TO: Record<ReturnType<typeof useI18n>["lang"], { locale: string; curr
   zh: { locale: "zh-CN", currency: "CNY" },
 };
 
-// 환율 기본값 (fallback) : 기준은 USD
 const DEFAULT_RATES: Record<CurrencyCode, number> = {
   USD: 1,
   KRW: 1350,
@@ -20,7 +16,6 @@ const DEFAULT_RATES: Record<CurrencyCode, number> = {
   CNY: 7.2,
 };
 
-// 통화별 자리수 규칙
 const ROUND_RULE: Record<CurrencyCode, { min: number; max: number }> = {
   KRW: { min: 0, max: 0 },
   JPY: { min: 0, max: 0 },
@@ -28,7 +23,6 @@ const ROUND_RULE: Record<CurrencyCode, { min: number; max: number }> = {
   CNY: { min: 2, max: 2 },
 };
 
-/** ✅ USD → targetCurrency 숫자 변환 */
 export function convertFromUSD(
   usd: number,
   target: CurrencyCode,
@@ -38,7 +32,6 @@ export function convertFromUSD(
   return usd * rate;
 }
 
-/** ✅ USD → targetCurrency 금액 포맷 */
 export function formatFromUSD(
   usd: number,
   lang: keyof typeof LANG_TO,
@@ -57,7 +50,6 @@ export function formatFromUSD(
   }).format(amount);
 }
 
-/** ✅ 장바구니 저장용: USD 금액을 현재 언어 통화 숫자로 변환 */
 export function numberFromUSD(
   usd: number,
   lang: keyof typeof LANG_TO,
@@ -68,7 +60,6 @@ export function numberFromUSD(
   const rule = ROUND_RULE[currency];
   const amount = usd * rate;
 
-  // 정수 통화(KRW/JPY)는 반올림 처리
   const factor = Math.pow(10, rule.max);
   return Math.round(amount * factor) / factor;
 }

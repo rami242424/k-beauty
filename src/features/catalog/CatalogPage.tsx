@@ -13,17 +13,33 @@ import {
   type Product as ApiProduct,
   type BeautyCategory,
 } from "../../api/products";
-import { useI18n } from "../../lib/i18n";
-import { formatKrwWon, usdToKrw } from "../../lib/money"
+import { useI18n, type DictKey } from "../../lib/i18n";
+import { formatFromUSD, numberFromUSD } from "../../lib/money";
 
 const categories = ["all", "beauty", "skin-care", "fragrances"] as const;
 const sorts = ["recent", "price-asc", "price-desc", "rating-desc"] as const;
+
+// ✅ 카테고리 코드 → 라벨 키 매핑
+const categoryLabelKey: Record<(typeof categories)[number], DictKey> = {
+  all: "category_all",
+  beauty: "category_beauty",
+  "skin-care": "category_skin_care",
+  fragrances: "category_fragrances",
+};
+
+// ✅ 정렬 코드 → 라벨 키 매핑
+const sortLabelKey: Record<(typeof sorts)[number], DictKey> = {
+  "recent": "sortRecent",
+  "price-asc": "sortPriceAsc",
+  "price-desc": "sortPriceDesc",
+  "rating-desc": "sortRatingDesc",
+};
 
 function mapToViewProduct(p: ApiProduct): ViewProduct {
   return {
     id: String(p.id),
     name: p.title,
-    price: p.price,            // USD (표시는 KRW로 변환)
+    price: p.price, // USD (표시는 언어 통화로 변환)
     category: p.category,
     imageUrl: p.thumbnail,
     rating: p.rating,
@@ -32,7 +48,7 @@ function mapToViewProduct(p: ApiProduct): ViewProduct {
 }
 
 export default function CatalogPage() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const [params, setParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<ViewProduct[]>([]);
@@ -44,8 +60,8 @@ export default function CatalogPage() {
 
   useEffect(() => {
     setLoading(true);
-    const t = setTimeout(() => setLoading(false), 350);
-    return () => clearTimeout(t);
+    const tId = setTimeout(() => setLoading(false), 350);
+    return () => clearTimeout(tId);
   }, [params.toString()]);
 
   useEffect(() => {
@@ -115,22 +131,24 @@ export default function CatalogPage() {
     <div className="mx-auto max-w-[var(--container)] px-4 py-6">
       <h1 className="text-2xl font-bold ink mb-4">{t("catalog")}</h1>
 
-      {/* 컨트롤바 */}
+      {/* ✅ 컨트롤바 (다국어) */}
       <div className="flex flex-col md:flex-row gap-3 md:items-center mb-4">
         <input
           className="flex-1 rounded-xl border px-3 py-2"
           placeholder={t("searchPlaceholder")}
           value={q}
           onChange={(e) => set("q", e.target.value)}
+          aria-label={t("searchPlaceholder")}
         />
         <select
           className="rounded-xl border px-3 py-2"
           value={cat}
           onChange={(e) => set("category", e.target.value)}
+          aria-label={t("category")}
         >
           {categories.map((c) => (
             <option key={c} value={c}>
-              {c}
+              {t(categoryLabelKey[c])}
             </option>
           ))}
         </select>
@@ -138,21 +156,23 @@ export default function CatalogPage() {
           className="rounded-xl border px-3 py-2"
           value={sort}
           onChange={(e) => set("sort", e.target.value)}
+          aria-label="sort"
         >
-          <option value="recent">신상품순(기본)</option>
-          <option value="price-asc">가격 낮은순</option>
-          <option value="price-desc">가격 높은순</option>
-          <option value="rating-desc">평점 높은순</option>
+          {sorts.map((s) => (
+            <option key={s} value={s}>
+              {t(sortLabelKey[s])}
+            </option>
+          ))}
         </select>
         <button
           className="btn-outline-brand"
           onClick={() => setParams(new URLSearchParams(), { replace: true })}
         >
-          초기화
+          {t("reset")}
         </button>
       </div>
 
-      {/* 로딩 스켈레톤 */}
+      {/* 로딩 스켈레톤 / 빈 결과 문구도 i18n */}
       {loading ? (
         <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
@@ -165,7 +185,7 @@ export default function CatalogPage() {
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="text-gray-500">조건에 맞는 상품이 없습니다.</div>
+        <div className="text-gray-500">{t("noResults")}</div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 items-stretch">
           {filtered.map((p) => (
@@ -187,8 +207,8 @@ export default function CatalogPage() {
                 {p.rating && <Badge variant="brand">★ {p.rating}</Badge>}
               </div>
 
-              {/* 가격: USD → KRW 변환 표시 */}
-              <div className="mt-1 price font-bold">{formatKrwWon(p.price)}</div>
+              {/* 가격: USD → 현재 언어 통화로 변환/표기 */}
+              <div className="mt-1 price font-bold">{formatFromUSD(p.price, lang)}</div>
 
               <Button
                 variant="solid"
@@ -197,11 +217,11 @@ export default function CatalogPage() {
                   addItem({
                     id: p.id,
                     name: p.name,
-                    price: usdToKrw(p.price), // 카트 내부도 KRW
+                    price: numberFromUSD(p.price, lang),
                     imageUrl: p.imageUrl,
                     qty: 1,
                   });
-                  toast.success("장바구니에 담겼습니다.");
+                  toast.success(t("addToCart"));
                 }}
               >
                 {t("addToCart")}

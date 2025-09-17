@@ -1,9 +1,9 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
-type Lang = "ko" | "en" | "ja" | "zh";
+export type Lang = "ko" | "en" | "ja" | "zh";
 
 // 화면에서 쓸 텍스트 키들
-type DictKey =
+export type DictKey =
   | "brand"
   | "catalog"
   | "cart"
@@ -15,7 +15,18 @@ type DictKey =
   | "category"
   | "seeMore"
   | "addToCart"
-  | "price";
+  | "price"
+  // ✅ 컨트롤바/상태 문구 추가
+  | "category_all"
+  | "category_beauty"
+  | "category_skin_care"
+  | "category_fragrances"
+  | "sortRecent"
+  | "sortPriceAsc"
+  | "sortPriceDesc"
+  | "sortRatingDesc"
+  | "reset"
+  | "noResults";
 
 const dict: Record<Lang, Record<DictKey, string>> = {
   ko: {
@@ -31,6 +42,17 @@ const dict: Record<Lang, Record<DictKey, string>> = {
     seeMore: "더 보기",
     addToCart: "담기",
     price: "가격",
+    // 추가
+    category_all: "전체",
+    category_beauty: "뷰티",
+    category_skin_care: "스킨케어",
+    category_fragrances: "향수",
+    sortRecent: "신상품순(기본)",
+    sortPriceAsc: "가격 낮은순",
+    sortPriceDesc: "가격 높은순",
+    sortRatingDesc: "평점 높은순",
+    reset: "초기화",
+    noResults: "조건에 맞는 상품이 없습니다.",
   },
   en: {
     brand: "K-Beauty",
@@ -45,6 +67,17 @@ const dict: Record<Lang, Record<DictKey, string>> = {
     seeMore: "See more",
     addToCart: "Add",
     price: "Price",
+    // 추가
+    category_all: "All",
+    category_beauty: "Beauty",
+    category_skin_care: "Skin care",
+    category_fragrances: "Fragrances",
+    sortRecent: "Newest (default)",
+    sortPriceAsc: "Price: Low to High",
+    sortPriceDesc: "Price: High to Low",
+    sortRatingDesc: "Rating: High to Low",
+    reset: "Reset",
+    noResults: "No products match your filters.",
   },
   ja: {
     brand: "K-Beauty",
@@ -59,6 +92,17 @@ const dict: Record<Lang, Record<DictKey, string>> = {
     seeMore: "もっと見る",
     addToCart: "追加",
     price: "価格",
+    // 추가
+    category_all: "すべて",
+    category_beauty: "ビューティー",
+    category_skin_care: "スキンケア",
+    category_fragrances: "フレグランス",
+    sortRecent: "新着（デフォルト）",
+    sortPriceAsc: "価格が安い順",
+    sortPriceDesc: "価格が高い順",
+    sortRatingDesc: "評価が高い順",
+    reset: "リセット",
+    noResults: "条件に合う商品がありません。",
   },
   zh: {
     brand: "K-Beauty",
@@ -73,6 +117,17 @@ const dict: Record<Lang, Record<DictKey, string>> = {
     seeMore: "查看更多",
     addToCart: "加入",
     price: "价格",
+    // 추가
+    category_all: "全部",
+    category_beauty: "美妆",
+    category_skin_care: "护肤",
+    category_fragrances: "香水",
+    sortRecent: "最新（默认）",
+    sortPriceAsc: "价格从低到高",
+    sortPriceDesc: "价格从高到低",
+    sortRatingDesc: "评分从高到低",
+    reset: "重置",
+    noResults: "没有符合条件的商品。",
   },
 };
 
