@@ -1,229 +1,170 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import type { Product as ViewProduct } from "../../types/product";
-import { useCartStore } from "../order/cartStore";
-import Card from "../../components/ui/Card";
+import { fetchBeautyProducts, type Product } from "../../api/products";
 import Badge from "../../components/ui/Badge";
 import Button from "../../components/ui/Button";
-import Skeleton from "../../components/ui/Skeleton";
+import { useCartStore } from "../order/cartStore";
 import { toast } from "sonner";
-import {
-  fetchBeautyProducts,
-  fetchBeautyProductsByCategory,
-  type Product as ApiProduct,
-  type BeautyCategory,
-} from "../../api/products";
-import { useI18n, type DictKey } from "../../lib/i18n";
+import { useI18n } from "../../lib/i18n";
 import { formatFromUSD } from "../../lib/money";
-
-const categories = ["all", "beauty", "skin-care", "fragrances"] as const;
-const sorts = ["recent", "price-asc", "price-desc", "rating-desc"] as const;
-
-// 카테고리 코드 → 라벨 키 매핑
-const categoryLabelKey: Record<(typeof categories)[number], DictKey> = {
-  all: "category_all",
-  beauty: "category_beauty",
-  "skin-care": "category_skin_care",
-  fragrances: "category_fragrances",
-};
-
-// 정렬 코드 → 라벨 키 매핑
-const sortLabelKey: Record<(typeof sorts)[number], DictKey> = {
-  "recent": "sortRecent",
-  "price-asc": "sortPriceAsc",
-  "price-desc": "sortPriceDesc",
-  "rating-desc": "sortRatingDesc",
-};
-
-function mapToViewProduct(p: ApiProduct): ViewProduct {
-  return {
-    id: String(p.id),
-    name: p.title,
-    price: p.price, // USD
-    category: p.category,
-    imageUrl: p.thumbnail,
-    rating: p.rating,
-    tags: [],
-  };
-}
 
 export default function CatalogPage() {
   const { t, lang } = useI18n();
-  const [params, setParams] = useSearchParams();
+  const [params] = useSearchParams();
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [data, setData] = useState<ViewProduct[]>([]);
 
-  const q = params.get("q") ?? "";
-  const catQ = params.get("category") ?? params.get("cat") ?? "all";
-  const cat = catQ as (typeof categories)[number];
-  const sort = (params.get("sort") ?? "recent") as (typeof sorts)[number];
+  // ✅ URL 파라미터
+  const rawQ = params.get("q");
+  const rawCategory = params.get("category");
+  const view = params.get("view"); // "today" -> 오특
+  const sort = params.get("sort"); // "rank"  -> 랭킹
 
-  useEffect(() => {
-    setLoading(true);
-    const tId = setTimeout(() => setLoading(false), 350);
-    return () => clearTimeout(tId);
-  }, [params.toString()]);
+  const q = (rawQ ?? "").trim();
+  const category = (rawCategory ?? "").trim();
 
+  // ✅ 데이터 로드
   useEffect(() => {
     let mounted = true;
     (async () => {
       try {
-        if (cat !== "all") {
-          const list = await fetchBeautyProductsByCategory(cat as BeautyCategory);
-          if (!mounted) return;
-          setData(list.map(mapToViewProduct));
-        } else {
-          const list = await fetchBeautyProducts();
-          if (!mounted) return;
-          setData(list.map(mapToViewProduct));
-        }
+        const prods = await fetchBeautyProducts();
+        if (!mounted) return;
+        setProducts(Array.isArray(prods) ? prods : []);
       } catch (e) {
         console.error(e);
-        if (mounted) setData([]);
+        setProducts([]);
+      } finally {
+        if (mounted) setLoading(false);
       }
     })();
     return () => {
       mounted = false;
     };
-  }, [cat]);
+  }, []);
 
-  const set = (k: string, v: string) => {
-    const p = new URLSearchParams(params);
-    v ? p.set(k, v) : p.delete(k);
-    if (k === "cat") {
-      v ? p.set("category", v) : p.delete("category");
-      p.delete("cat");
-    }
-    setParams(p, { replace: true });
-  };
-
+  // ✅ 필터/정렬
   const filtered = useMemo(() => {
-    let arr = data;
+    let list = [...products];
+
+    // 검색어 필터
     if (q) {
-      const kw = q.toLowerCase();
-      arr = arr.filter(
-        (p) =>
-          p.name.toLowerCase().includes(kw) ||
-          p.tags?.some((t) => t.toLowerCase().includes(kw))
-      );
+      const qq = q.toLowerCase();
+      list = list.filter((p) => {
+        const title = (p.title ?? "").toLowerCase();
+        const cat = (p.category ?? "").toLowerCase();
+        return title.includes(qq) || cat.includes(qq);
+      });
     }
-    if (cat !== "all") arr = arr.filter((p) => p.category === cat);
 
-    switch (sort) {
-      case "price-asc":
-        arr = [...arr].sort((a, b) => a.price - b.price);
-        break;
-      case "price-desc":
-        arr = [...arr].sort((a, b) => b.price - a.price);
-        break;
-      case "rating-desc":
-        arr = [...arr].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
-        break;
-      default:
-        break; // recent
+    // 카테고리 필터
+    if (category) {
+      const cc = category.toLowerCase();
+      list = list.filter((p) => (p.category ?? "").toLowerCase() === cc);
     }
-    return arr;
-  }, [data, q, cat, sort]);
 
-  const addItem = useCartStore((s) => s.addItem);
+    // 오특/랭킹 모드
+    if (view === "today") {
+      // 가격 오름차순(특가 느낌)
+      list.sort((a, b) => (Number(a.price) || 0) - (Number(b.price) || 0));
+    } else if (sort === "rank") {
+      // 평점 내림차순
+      list.sort((a, b) => (Number(b.rating) || 0) - (Number(a.rating) || 0));
+    }
+
+    return list;
+  }, [products, q, category, view, sort]);
+
+  const title =
+    view === "today" ? "오늘의 특가" :
+    sort === "rank" ? "랭킹" :
+    "전체 상품";
+
+  if (loading) return <div className="p-6 text-gray-600">로딩 중...</div>;
 
   return (
-    <div className="mx-auto max-w-[var(--container)] px-4 py-6">
-      <h1 className="text-2xl font-bold ink mb-4">{t("catalog")}</h1>
-
-      {/* 컨트롤바 (다국어) */}
-      <div className="flex flex-col md:flex-row gap-3 md:items-center mb-4">
-        <input
-          className="flex-1 rounded-xl border px-3 py-2"
-          placeholder={t("searchPlaceholder")}
-          value={q}
-          onChange={(e) => set("q", e.target.value)}
-          aria-label={t("searchPlaceholder")}
-        />
-        <select
-          className="rounded-xl border px-3 py-2"
-          value={cat}
-          onChange={(e) => set("category", e.target.value)}
-          aria-label={t("category")}
-        >
-          {categories.map((c) => (
-            <option key={c} value={c}>
-              {t(categoryLabelKey[c])}
-            </option>
-          ))}
-        </select>
-        <select
-          className="rounded-xl border px-3 py-2"
-          value={sort}
-          onChange={(e) => set("sort", e.target.value)}
-          aria-label="sort"
-        >
-          {sorts.map((s) => (
-            <option key={s} value={s}>
-              {t(sortLabelKey[s])}
-            </option>
-          ))}
-        </select>
-        <button
-          className="btn-outline-brand"
-          onClick={() => setParams(new URLSearchParams(), { replace: true })}
-        >
-          {t("reset")}
-        </button>
+    <div className="mx-auto max-w-[var(--container)]">
+      <div className="flex items-baseline justify-between">
+        <h1 className="text-xl font-bold ink">{title}</h1>
+        <div className="text-sm text-gray-500">
+          총 <b>{filtered.length}</b>개
+        </div>
       </div>
 
-      {/* 로딩/리스트 */}
-      {loading ? (
-        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Card key={i} className="flex h-full flex-col p-3">
-              <Skeleton className="w-full h-44 mb-3" />
-              <Skeleton className="h-4 w-2/3 mb-2" />
-              <Skeleton className="h-4 w-1/3 mb-4" />
-              <Skeleton className="h-9 w-full" />
-            </Card>
-          ))}
-        </div>
-      ) : filtered.length === 0 ? (
-        <div className="text-gray-500">{t("noResults")}</div>
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 items-stretch">
-          {filtered.map((p) => (
-            <Card key={p.id} className="flex h-full flex-col p-3">
-              <div className="mb-3 h-44 w-full overflow-hidden rounded-xl bg-white">
-                <img src={p.imageUrl} alt={p.name} className="h-full w-full object-contain" />
-              </div>
-              <div className="font-semibold line-clamp-2 min-h-[3rem] ink">{p.name}</div>
-              <div className="mt-1 flex items-center gap-2">
-                <span className="text-sm text-gray-500 capitalize">
-                  {p.category.replace("-", " ")}
-                </span>
-                {p.rating && <Badge variant="brand">★ {p.rating}</Badge>}
-              </div>
+      {/* 그리드 */}
+      <div className="mt-4 grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6">
+        {filtered.map((p) => (
+          <CatalogCard key={p.id} p={p} lang={lang} t={t} />
+        ))}
+      </div>
 
-              {/* ✅ 가격: USD → 현재 언어 통화로 변환/표기 */}
-              <div className="mt-1 price font-bold">{formatFromUSD(p.price, lang)}</div>
-
-              <Button
-                variant="solid"
-                className="mt-auto w-full"
-                onClick={() => {
-                  addItem({
-                    id: p.id,
-                    name: p.name,
-                    priceUsd: p.price, // ✅ USD 기준가 저장
-                    imageUrl: p.imageUrl,
-                    qty: 1,
-                  });
-                  toast.success(t("toast_addedToCart"));
-                }}
-              >
-                {t("addToCart")}
-              </Button>
-            </Card>
-          ))}
+      {filtered.length === 0 && (
+        <div className="py-20 text-center text-gray-500">
+          {t("noResults") ?? "검색 결과가 없습니다."}
         </div>
       )}
     </div>
+  );
+}
+
+/* ===== 카드 컴포넌트 ===== */
+function CatalogCard({
+  p,
+  lang,
+  t,
+}: {
+  p: Product;
+  lang: string;
+  t: (k: string) => string;
+}) {
+  const addItem = useCartStore((s) => s.addItem);
+
+  return (
+    <article className="card flex h-full flex-col p-3">
+      <div className="h-40 mb-3 w-full overflow-hidden rounded-xl bg-white">
+        <img
+          src={p.thumbnail}
+          alt={p.title}
+          className="h-full w-full object-contain"
+          loading="lazy"
+        />
+      </div>
+
+      <div className="font-semibold line-clamp-2 min-h-[3rem] ink">
+        {p.title}
+      </div>
+
+      <div className="mt-1 flex items-center gap-2 text-sm">
+        <span className="text-gray-500 capitalize">
+          {(p.category ?? "").replace("-", " ")}
+        </span>
+        <Badge variant="brand">
+          ★ {typeof p.rating === "number" ? p.rating.toFixed(1) : String(p.rating)}
+        </Badge>
+      </div>
+
+      <div className="mt-1 price font-bold">
+        {formatFromUSD(Number(p.price) || 0, lang)}
+      </div>
+
+      <div className="mt-auto" />
+
+      <Button
+        variant="solid"
+        className="mt-3 w-full"
+        onClick={() => {
+          addItem({
+            id: String(p.id),
+            name: p.title,
+            priceUsd: Number(p.price) || 0,
+            imageUrl: p.thumbnail,
+            qty: 1,
+          });
+          toast.success(t("toast_addedToCart") ?? "장바구니에 담았습니다");
+        }}
+      >
+        {t("addToCart")}
+      </Button>
+    </article>
   );
 }
