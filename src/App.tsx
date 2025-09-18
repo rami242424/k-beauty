@@ -4,34 +4,38 @@ import CatalogPage from "./features/catalog/CatalogPage";
 import CartPage from "./features/order/CartPage";
 import CheckoutPage from "./features/order/CheckoutPage";
 import CheckoutSuccessPage from "./features/order/CheckoutSuccessPage";
+import LoginPage from "./features/auth/LoginPage";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 export default function App() {
   return (
     <Routes>
-      {/* 홈 */}
+      {/* 공개 페이지 */}
       <Route path="/" element={<HomePage />} />
-
-      {/* 카탈로그 */}
+      <Route path="/login" element={<LoginPage />} />
       <Route path="/catalog" element={<CatalogPage />} />
-
-      {/* 장바구니 */}
       <Route path="/cart" element={<CartPage />} />
 
-      {/* 결제 */}
+      {/* 지금은 공개로 두되, 보호로 바꾸고 싶으면 아래 블럭으로 이동 */}
       <Route path="/checkout" element={<CheckoutPage />} />
       <Route path="/checkout/success" element={<CheckoutSuccessPage />} />
 
-      {/* 어드민 */}
+      
+      <Route element={<ProtectedRoute />}>
+        <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/checkout/success" element={<CheckoutSuccessPage />} />
+        {/* <Route path="/admin" element={<AdminPage />} /> */}
+      </Route>
+     
+
       <Route
         path="/admin"
         element={
-          <div className="mx-auto max-w-[var(--container)] px-4 py-6">
-            Admin Page
-          </div>
+          <div className="mx-auto max-w-[var(--container)] px-4 py-6">Admin Page</div>
         }
       />
 
-      {/* (옵션) 404 Not Found */}
+      {/* 404 */}
       <Route
         path="*"
         element={
