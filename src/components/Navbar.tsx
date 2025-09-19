@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useAuthStore } from "../stores/authStore";
 import { useCartStore } from "../features/order/cartStore";
 import { useI18n } from "../lib/i18n";
+import LogoKRBadge from "../components/logo/LogoKRBadge";
 
 export default function Navbar() {
   return (
@@ -32,19 +33,25 @@ function TopBar() {
 
   return (
     <div className="grid grid-cols-[auto,1fr,auto] items-center gap-4 py-0.5">
-      {/* 로고 */}
+      {/* 좌: 로고 */}
       <div className="justify-self-start flex items-center h-full">
-        <Link
-          to="/"
-          className="block text-lg font-bold text-blue-700 leading-none tracking-tight -mt-[1px] no-underline"
-        >
-          K-Beauty
+        <Link to="/" className="no-underline flex items-center gap-2">
+          <LogoKRBadge
+            size={100}
+            text="K-beauty"
+            fill="#82DC28"
+            textColor="#111827"
+            fontFamily={`"Noto Sans KR", system-ui, -apple-system, sans-serif`}
+            fontWeight={700}
+            dy={-2}
+          />
+          <span className="sr-only">K-뷰티 홈으로</span>
         </Link>
       </div>
 
       <div /> {/* 가운데 비움 */}
 
-      {/* 우측 액션 (버튼/언어 동일 높이/두께) */}
+      {/* 우: 로그인/언어 (높이/두께 일치) */}
       <div className="justify-self-end flex items-center gap-2 whitespace-nowrap shrink-0">
         {!isHydrated ? (
           <div className="text-sm text-gray-500">...</div>
@@ -53,7 +60,6 @@ function TopBar() {
             <span className="hidden md:inline text-sm text-gray-600">
               {user?.name || user?.email}
             </span>
-            {/* 로그아웃: h-9 + border(1px) + rounded-full */}
             <button
               onClick={onLogout}
               className="inline-flex h-9 items-center rounded-full border border-[#82dc28] px-4 text-sm text-black hover:bg-[#e9fbd8] no-underline bg-white"
@@ -62,7 +68,6 @@ function TopBar() {
             </button>
           </>
         ) : (
-          /* 로그인: h-9 + border(1px) + rounded-full (배경만 라임) */
           <Link
             to="/login"
             className="inline-flex h-9 items-center rounded-full border border-[#82dc28] bg-[#82dc28] px-4 text-sm text-black hover:bg-[#76cc1f] no-underline"
@@ -71,7 +76,7 @@ function TopBar() {
           </Link>
         )}
 
-        {/* 언어 토글: 컨테이너 h-9, 내부 버튼 h-full로 정확히 일치 */}
+        {/* 언어 토글: 컨테이너 h-9, 내부 버튼 h-full */}
         <div className="hidden sm:flex h-9 items-stretch rounded-full border border-[#d9e9d0] overflow-hidden">
           {langs.map((l, i) => {
             const selected = lang === l;
@@ -80,9 +85,7 @@ function TopBar() {
                 key={l}
                 onClick={() => setLang(l)}
                 className={`h-full px-3 text-sm no-underline 
-                  ${selected
-                    ? "bg-[#82dc28] text-black"
-                    : "text-gray-800 hover:bg-[#f6fff0]"} 
+                  ${selected ? "bg-[#82dc28] text-black" : "text-gray-800 hover:bg-[#f6fff0]"} 
                   ${i !== 0 ? "border-l border-[#e9f1e3]" : ""}`}
                 aria-pressed={selected}
               >
@@ -98,7 +101,6 @@ function TopBar() {
 
 /* ============ 하단: 메뉴(검정, 살짝 굵게) + 장바구니 배지 ============ */
 function CategoryBar() {
-  // 링크는 검정 + semibold, active는 bold
   const linkCls = ({ isActive }: { isActive: boolean }) =>
     `relative inline-flex items-center px-3 py-2 rounded-md text-sm transition-colors no-underline
      ${isActive ? "text-black font-bold" : "text-black font-semibold hover:bg-gray-50"}`;
