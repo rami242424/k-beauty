@@ -1,23 +1,24 @@
-// src/components/Navbar.tsx
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import { useAuthStore } from "../stores/authStore";
 import { useCartStore } from "../features/order/cartStore";
 import { useI18n } from "../lib/i18n";
-import LogoKRBadge from "../components/logo/LogoKRBadge";
+import LogoKRBadge from "./logo/LogoKRBadge";
+
+const LOGO_SIZE = 80; // ← 지금 쓰는 로고 크기 그대로. 필요하면 숫자만 바꿔줘.
 
 export default function Navbar() {
   return (
     <div className="w-full">
-      <TopBar />
-      <CategoryBar />
+      <TopRow />
+      <MenuRow />
     </div>
   );
 }
 
-/* ============ 상단: 로고 + 우측 액션(사이즈 완전 일치) ============ */
-function TopBar() {
+/* ============ 1줄차: 로고(좌) ───────────── 로그인/언어(우) ============ */
+function TopRow() {
   const navigate = useNavigate();
   const { token, user, isHydrated, hydrate, signOut } = useAuthStore();
   useEffect(() => { if (!isHydrated) hydrate(); }, [isHydrated, hydrate]);
@@ -32,29 +33,26 @@ function TopBar() {
   const langs = (["ko", "en", "ja", "zh"] as const);
 
   return (
-    <div className="grid grid-cols-[auto,1fr,auto] items-center gap-4 py-0.5">
-      {/* 좌: 로고 */}
-      <div className="justify-self-start flex items-center h-full">
-        <Link to="/" className="no-underline flex items-center gap-2">
-          <LogoKRBadge
-            size={100}
-            text="K-beauty"
-            fill="#82DC28"
-            textColor="#111827"
-            fontFamily={`"Noto Sans KR", system-ui, -apple-system, sans-serif`}
-            fontWeight={700}
-            dy={-2}
-          />
-          <span className="sr-only">K-뷰티 홈으로</span>
-        </Link>
-      </div>
+    // ✅ 높이 고정 X: 현재 요소 크기(로고/버튼) 그대로 사용
+    <div className="flex items-center justify-between gap-6 py-1">
+      {/* 좌: 로고 (크기 유지) */}
+      <Link to="/" className="no-underline flex items-center">
+        <LogoKRBadge
+          size={LOGO_SIZE}
+          text="K-beauty"
+          fill="#82DC28"
+          textColor="#111827"
+          fontFamily={`"Noto Sans KR", system-ui, -apple-system, sans-serif`}
+          fontWeight={800}
+          dy={-2}
+        />
+        <span className="sr-only">K-뷰티 홈으로</span>
+      </Link>
 
-      <div /> {/* 가운데 비움 */}
-
-      {/* 우: 로그인/언어 (높이/두께 일치) */}
-      <div className="justify-self-end flex items-center gap-2 whitespace-nowrap shrink-0">
+      {/* 우: 로그인/언어 (크기 유지) */}
+      <div className="flex items-center gap-3 whitespace-nowrap">
         {!isHydrated ? (
-          <div className="text-sm text-gray-500">...</div>
+          <div className="text-sm text-gray-500 px-2">...</div>
         ) : token ? (
           <>
             <span className="hidden md:inline text-sm text-gray-600">
@@ -62,7 +60,7 @@ function TopBar() {
             </span>
             <button
               onClick={onLogout}
-              className="inline-flex h-9 items-center rounded-full border border-[#82dc28] px-4 text-sm text-black hover:bg-[#e9fbd8] no-underline bg-white"
+              className="inline-flex items-center rounded-full border border-[#82dc28] px-4 py-2 text-sm text-black hover:bg-[#e9fbd8] bg-white"
             >
               로그아웃
             </button>
@@ -70,22 +68,21 @@ function TopBar() {
         ) : (
           <Link
             to="/login"
-            className="inline-flex h-9 items-center rounded-full border border-[#82dc28] bg-[#82dc28] px-4 text-sm text-black hover:bg-[#76cc1f] no-underline"
+            className="inline-flex items-center rounded-full border border-[#82dc28] bg-[#82DC28] px-4 py-2 text-sm text-black hover:bg-[#76cc1f]"
           >
             로그인
           </Link>
         )}
 
-        {/* 언어 토글: 컨테이너 h-9, 내부 버튼 h-full */}
-        <div className="hidden sm:flex h-9 items-stretch rounded-full border border-[#d9e9d0] overflow-hidden">
+        <div className="hidden sm:flex items-stretch rounded-full border border-[#d9e9d0] overflow-hidden">
           {langs.map((l, i) => {
             const selected = lang === l;
             return (
               <button
                 key={l}
                 onClick={() => setLang(l)}
-                className={`h-full px-3 text-sm no-underline 
-                  ${selected ? "bg-[#82dc28] text-black" : "text-gray-800 hover:bg-[#f6fff0]"} 
+                className={`px-3 py-2 text-sm
+                  ${selected ? "bg-[#82dc28] text-black" : "text-gray-800 hover:bg-[#f6fff0]"}
                   ${i !== 0 ? "border-l border-[#e9f1e3]" : ""}`}
                 aria-pressed={selected}
               >
@@ -99,23 +96,22 @@ function TopBar() {
   );
 }
 
-/* ============ 하단: 메뉴(검정, 살짝 굵게) + 장바구니 배지 ============ */
-function CategoryBar() {
-  const linkCls = ({ isActive }: { isActive: boolean }) =>
-    `relative inline-flex items-center px-3 py-2 rounded-md text-sm transition-colors no-underline
-     ${isActive ? "text-black font-bold" : "text-black font-semibold hover:bg-gray-50"}`;
-
+/* ============ 2줄차: 가운데 메뉴 ============ */
+function MenuRow() {
   const items = useCartStore((s) => s.items ?? []);
   const count = useMemo(() => items.reduce((n, it) => n + (Number(it?.qty) || 0), 0), [items]);
 
+  const linkCls = ({ isActive }: { isActive: boolean }) =>
+    `relative inline-flex items-center px-3 py-2 rounded-md text-sm no-underline
+     ${isActive ? "text-black font-bold" : "text-black font-semibold hover:bg-gray-50"}`;
+
   return (
-    <nav className="pt-2">
+    <nav className="pt-1 pb-1">
       <ul className="flex items-center justify-center gap-3">
         <li><NavLink to="/catalog" className={linkCls}>전체메뉴</NavLink></li>
         <li><NavLink to="/catalog?view=today" className={linkCls}>오특</NavLink></li>
         <li><NavLink to="/catalog?sort=rank" className={linkCls}>랭킹</NavLink></li>
 
-        {/* 장바구니 + 배지 */}
         <li>
           <NavLink to="/cart" className={({ isActive }) => `${linkCls({ isActive })} pr-5`}>
             장바구니
