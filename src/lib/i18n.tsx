@@ -1,3 +1,4 @@
+// src/lib/i18n.tsx
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 export type Lang = "ko" | "en" | "ja" | "zh";
@@ -21,7 +22,10 @@ export type DictKey =
   // 결제 수단
   | "pay_card" | "pay_kakao" | "pay_naver" | "pay_payco" | "pay_bank"
   // 유효성(체크아웃)
-  | "val_name" | "val_phone" | "val_address";
+  | "val_name" | "val_phone" | "val_address"
+  // ✅ 네브바(i18n) 추가
+  | "home" | "login" | "logout" | "logout_done"
+  | "menu_all" | "menu_today" | "menu_rank" | "menu_cart" | "menu_checkout";
 
 const dict: Record<Lang, Record<DictKey, string>> = {
   ko: {
@@ -51,7 +55,7 @@ const dict: Record<Lang, Record<DictKey, string>> = {
 
     toast_addedToCart: "장바구니에 담겼습니다.",
 
-    // ✅ Cart/Checkout
+    // Cart/Checkout
     cart_empty: "장바구니가 비어있습니다.",
     go_to_catalog: "카탈로그로 가기",
     remove: "삭제",
@@ -81,7 +85,19 @@ const dict: Record<Lang, Record<DictKey, string>> = {
     val_name: "이름을 입력하세요",
     val_phone: "연락처를 입력하세요",
     val_address: "주소를 입력하세요",
+
+    // 네브바
+    home: "홈",
+    login: "로그인",
+    logout: "로그아웃",
+    logout_done: "로그아웃되었습니다.",
+    menu_all: "전체메뉴",
+    menu_today: "오특",
+    menu_rank: "랭킹",
+    menu_cart: "장바구니",
+    menu_checkout: "체크아웃",
   },
+
   en: {
     brand: "K-Beauty",
     catalog: "Catalog",
@@ -138,7 +154,18 @@ const dict: Record<Lang, Record<DictKey, string>> = {
     val_name: "Please enter your name",
     val_phone: "Please enter your phone",
     val_address: "Please enter your address",
+
+    home: "Home",
+    login: "Sign in",
+    logout: "Sign out",
+    logout_done: "You have been signed out.",
+    menu_all: "All",
+    menu_today: "Today’s Deals",
+    menu_rank: "Ranking",
+    menu_cart: "Cart",
+    menu_checkout: "Checkout",
   },
+
   ja: {
     brand: "K-Beauty",
     catalog: "カタログ",
@@ -195,7 +222,18 @@ const dict: Record<Lang, Record<DictKey, string>> = {
     val_name: "氏名を入力してください",
     val_phone: "電話番号を入力してください",
     val_address: "住所を入力してください",
+
+    home: "ホーム",
+    login: "ログイン",
+    logout: "ログアウト",
+    logout_done: "ログアウトしました。",
+    menu_all: "すべて",
+    menu_today: "本日の特価",
+    menu_rank: "ランキング",
+    menu_cart: "カート",
+    menu_checkout: "チェックアウト",
   },
+
   zh: {
     brand: "K-Beauty",
     catalog: "目录",
@@ -252,6 +290,16 @@ const dict: Record<Lang, Record<DictKey, string>> = {
     val_name: "请输入姓名",
     val_phone: "请输入联系电话",
     val_address: "请输入地址",
+
+    home: "首页",
+    login: "登录",
+    logout: "登出",
+    logout_done: "已登出。",
+    menu_all: "全部",
+    menu_today: "今日特价",
+    menu_rank: "排行榜",
+    menu_cart: "购物车",
+    menu_checkout: "结算",
   },
 };
 
@@ -260,6 +308,7 @@ const I18nCtx = createContext<Ctx | null>(null);
 
 export function I18nProvider({ children, defaultLang = "ko" as Lang }) {
   const [lang, setLang] = useState<Lang>(defaultLang);
+
   useEffect(() => {
     const saved = (localStorage.getItem("lang") as Lang) || defaultLang;
     setLang(saved);

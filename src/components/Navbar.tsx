@@ -6,7 +6,7 @@ import { useCartStore } from "../features/order/cartStore";
 import { useI18n } from "../lib/i18n";
 import LogoKRBadge from "./logo/LogoKRBadge";
 
-const LOGO_SIZE = 80; // ← 지금 쓰는 로고 크기 그대로. 필요하면 숫자만 바꿔줘.
+const LOGO_SIZE = 80;
 
 export default function Navbar() {
   return (
@@ -17,25 +17,24 @@ export default function Navbar() {
   );
 }
 
-/* ============ 1줄차: 로고(좌) ───────────── 로그인/언어(우) ============ */
+/* 1줄차: 로고(좌) ─ 로그인/언어(우) */
 function TopRow() {
   const navigate = useNavigate();
+  const { t, lang, setLang } = useI18n();
   const { token, user, isHydrated, hydrate, signOut } = useAuthStore();
   useEffect(() => { if (!isHydrated) hydrate(); }, [isHydrated, hydrate]);
 
   const onLogout = () => {
     signOut();
-    toast.success("로그아웃되었습니다.");
+    toast.success(t("logout_done"));
     navigate("/", { replace: true });
   };
 
-  const { lang, setLang } = useI18n();
   const langs = (["ko", "en", "ja", "zh"] as const);
 
   return (
-    // ✅ 높이 고정 X: 현재 요소 크기(로고/버튼) 그대로 사용
     <div className="flex items-center justify-between gap-6 py-1">
-      {/* 좌: 로고 (크기 유지) */}
+      {/* 로고 */}
       <Link to="/" className="no-underline flex items-center">
         <LogoKRBadge
           size={LOGO_SIZE}
@@ -46,10 +45,10 @@ function TopRow() {
           fontWeight={800}
           dy={-2}
         />
-        <span className="sr-only">K-뷰티 홈으로</span>
+        <span className="sr-only">{t("home")}</span>
       </Link>
 
-      {/* 우: 로그인/언어 (크기 유지) */}
+      {/* 로그인 / 언어 */}
       <div className="flex items-center gap-3 whitespace-nowrap">
         {!isHydrated ? (
           <div className="text-sm text-gray-500 px-2">...</div>
@@ -62,7 +61,7 @@ function TopRow() {
               onClick={onLogout}
               className="inline-flex items-center rounded-full border border-[#82dc28] px-4 py-2 text-sm text-black hover:bg-[#e9fbd8] bg-white"
             >
-              로그아웃
+              {t("logout")}
             </button>
           </>
         ) : (
@@ -70,7 +69,7 @@ function TopRow() {
             to="/login"
             className="inline-flex items-center rounded-full border border-[#82dc28] bg-[#82DC28] px-4 py-2 text-sm text-black hover:bg-[#76cc1f]"
           >
-            로그인
+            {t("login")}
           </Link>
         )}
 
@@ -96,8 +95,9 @@ function TopRow() {
   );
 }
 
-/* ============ 2줄차: 가운데 메뉴 ============ */
+/* 2줄차: 가운데 메뉴 */
 function MenuRow() {
+  const { t } = useI18n();
   const items = useCartStore((s) => s.items ?? []);
   const count = useMemo(() => items.reduce((n, it) => n + (Number(it?.qty) || 0), 0), [items]);
 
@@ -108,19 +108,19 @@ function MenuRow() {
   return (
     <nav className="pt-1 pb-1">
       <ul className="flex items-center justify-center gap-3">
-        <li><NavLink to="/catalog" className={linkCls}>전체메뉴</NavLink></li>
-        <li><NavLink to="/catalog?view=today" className={linkCls}>오특</NavLink></li>
-        <li><NavLink to="/catalog?sort=rank" className={linkCls}>랭킹</NavLink></li>
+        <li><NavLink to="/catalog" className={linkCls}>{t("menu_all")}</NavLink></li>
+        <li><NavLink to="/catalog?view=today" className={linkCls}>{t("menu_today")}</NavLink></li>
+        <li><NavLink to="/catalog?sort=rank" className={linkCls}>{t("menu_rank")}</NavLink></li>
 
         <li>
           <NavLink to="/cart" className={({ isActive }) => `${linkCls({ isActive })} pr-5`}>
-            장바구니
+            {t("menu_cart")}
             {count > 0 && (
               <span
                 className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1
                            rounded-full bg-[#82dc28] text-black text-xs
                            flex items-center justify-center"
-                aria-label={`장바구니에 ${count}개`}
+                aria-label={t("cart_count", { n: count })}
               >
                 {count}
               </span>
@@ -128,7 +128,7 @@ function MenuRow() {
           </NavLink>
         </li>
 
-        <li><NavLink to="/checkout" className={linkCls}>체크아웃</NavLink></li>
+        <li><NavLink to="/checkout" className={linkCls}>{t("menu_checkout")}</NavLink></li>
       </ul>
     </nav>
   );

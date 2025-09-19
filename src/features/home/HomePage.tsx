@@ -107,23 +107,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 카테고리 퀵 메뉴 */}
-      <section className="mt-8">
-        <div className="max-w-6xl mx-auto px-4">
-          <h2 className="text-lg font-bold ink mb-3">{t("category")}</h2>
-          <div className="flex gap-2 overflow-x-auto py-2">
-            {categories.map((c) => (
-              <Link
-                key={c}
-                to={`/catalog?category=${encodeURIComponent(c)}`}
-                className="chip capitalize whitespace-nowrap"
-              >
-                {c.replace("-", " ")}
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* 오늘의 특가 (lg: 6칸) */}
       <section className="mt-8">
